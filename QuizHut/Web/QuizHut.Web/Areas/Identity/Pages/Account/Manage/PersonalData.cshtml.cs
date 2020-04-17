@@ -26,15 +26,9 @@ namespace QuizHut.Web.Areas.Identity.Pages.Account.Manage
             this._logger = logger;
         }
 
-        public async Task<IActionResult> OnGet()
+        public IActionResult OnGetAsync()
         {
-            var user = await this._userManager.GetUserAsync(this.User);
-            if (user == null)
-            {
-                return this.NotFound($"Unable to load user with ID '{this._userManager.GetUserId(this.User)}'.");
-            }
-
-            return this.Page();
+            return this.Redirect("/");
         }
     }
 }
