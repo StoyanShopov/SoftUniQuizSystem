@@ -1,4 +1,4 @@
-﻿@model ErrorViewModel
+﻿a@model ErrorViewModel
 @{
     this.ViewData["Title"] = "Error";
     var area = this.User.IsInRole(GlobalConstants.AdministratorRoleName)
@@ -9,7 +9,6 @@
 
 <div id="notfound">
     <div class="notfound-bg"></div>
-    <partial name="_BublesAndCirclesPrtial" />
     <div class="notfound">
         @if (@Model.StatusCode == "404")
         {
