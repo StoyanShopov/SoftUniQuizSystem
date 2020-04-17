@@ -1,0 +1,48 @@
+﻿@model InvalidUserEmailViewModel
+@{
+    ViewData["Title"] = "Index";
+    var invalidEmail = Model != null ? Model.Email : null;
+}
+<div class="row">
+    <div class="mt-2 mb-5 col-md-8">
+        @if (Model != null && Model.RoleName == GlobalConstants.AdministratorRoleName)
+        {
+            @await Component.InvokeAsync("UsersInRole", new { roleName = GlobalConstants.AdministratorRoleName, invalidEmail = invalidEmail })
+            @await Component.InvokeAsync("UsersInRole", new { roleName = GlobalConstants.TeacherRoleName })
+        }
+        else if (Model != null && Model.RoleName == GlobalConstants.TeacherRoleName)
+        {
+            @await Component.InvokeAsync("UsersInRole", new { roleName = GlobalConstants.AdministratorRoleName })
+            @await Component.InvokeAsync("UsersInRole", new { roleName = GlobalConstants.TeacherRoleName, invalidEmail = invalidEmail })
+        }
+        else
+        {
+            @await Component.InvokeAsync("UsersInRole", new { roleName = GlobalConstants.AdministratorRoleName })
+            @await Component.InvokeAsync("UsersInRole", new { roleName = GlobalConstants.TeacherRoleName })
+        }
+    </div>
+    <aside class="col-md-4">
+        <div>
+            <a href="/hangfire" target="_blank" class="btn btn-primary manage-account-btn ml-4 mb-5">
+                Event Status Scheduler
+                <i class="far fa-arrow-alt-circle-right ml-1"></i>
+            </a>
+        </div>
+        <div class="headline headline-md">
+            <h4 class="text-center">Last Updates</h4>
+            <hr>
+            <ul id="updates" class="navbar-nav">
+            </ul>
+        </div>
+    </aside>
+</div>
+@section InnerNav
+{
+    @await Html.PartialAsync("_DashboardNavBarPartial")
+}
+@section Scripts
+{
+    <script src="~/js/navigation.js" asp-append-version="true"></script>
+    <script src="~/js/adminUpdates.js" asp-append-version="true"></script>
+    <partial name="_ValidationScriptsPartial" />
+}

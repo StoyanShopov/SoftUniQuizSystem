@@ -1,0 +1,54 @@
+﻿@model PasswordInputViewModel
+@{
+    ViewData["Title"] = "Student Page";
+}
+
+@if (Model.Error != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">×</span>
+        </button>
+        <i class="fa fa-exclamation-circle"></i>
+        <strong>On no!</strong> @Model.Error
+    </div>
+}
+
+<div class="row mt-5">
+    <partial name="_TakeQuizPartial">
+        <aside class="col-md-4 offset-1">
+            <div class="headline headline-md text-center">
+                <h4>Last Updates</h4>
+                <hr>
+                <ul id="updates" class="navbar-nav">
+                </ul>
+            </div>
+        </aside>
+</div>
+
+@section Profile
+{
+
+    <li class="nav-item">
+        <a class="btn btn-outline-white ml-2" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
+            <i class="fas fa-address-card"></i>  Profile
+        </a>
+    </li>
+}
+@section Logout
+{
+    <li class="nav-item text-primary">
+        <form class="form-inline" asp-area="Identity"
+              asp-page="/Account/Logout"
+              asp-route-returnUrl="@(this.Url.Action("Index", "Home", new { area = string.Empty } ))">
+            <button type="submit" class="btn btn-outline-white ml-2">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </form>
+    </li>
+}
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/studentUpdates.js" asp-append-version="true"></script>
+}
+

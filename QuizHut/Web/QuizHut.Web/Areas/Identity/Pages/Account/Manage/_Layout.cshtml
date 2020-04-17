@@ -1,0 +1,45 @@
+﻿@{
+    Layout = (string)ViewData["Layout"] ?? "/Views/Shared/_LayoutStudent.cshtml";
+}
+
+<h1>Manage your account</h1>
+
+<div class="mt-2">
+    <h4>Change your account settings</h4>
+    <hr />
+    <div class="row">
+        <div class="col-md-3">
+            <partial name="_ManageNav" />
+        </div>
+        <div class="col-md-9">
+            @RenderBody()
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @RenderSection("Scripts", required: false)
+}
+@if (!this.User.IsInRole(GlobalConstants.AdministratorRoleName)
+                               && !this.User.IsInRole(GlobalConstants.TeacherRoleName))
+{
+@section Profile
+{
+
+    <li class="nav-item">
+        <a class="btn btn-outline-white ml-2" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
+            <i class="fas fa-address-card"></i>  Profile
+        </a>
+    </li>
+}
+@section Logout
+{
+    <li class="nav-item text-primary">
+        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@(this.Url.Action("Index", "Home", new { area = string.Empty } ))">
+            <button type="submit" class="btn btn-outline-white ml-2">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </form>
+    </li>
+}
+}

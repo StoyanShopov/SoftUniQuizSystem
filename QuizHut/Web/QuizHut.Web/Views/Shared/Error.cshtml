@@ -1,0 +1,32 @@
+﻿@model ErrorViewModel
+@{
+    this.ViewData["Title"] = "Error";
+    var area = this.User.IsInRole(GlobalConstants.AdministratorRoleName)
+    || this.User.IsInRole(GlobalConstants.TeacherRoleName)
+    ? "Administration"
+    : "";
+}
+
+<div id="notfound">
+    <div class="notfound-bg"></div>
+    <partial name="_BublesAndCirclesPrtial" />
+    <div class="notfound">
+        @if (@Model.StatusCode == "404")
+        {
+            <div class="notfound-404">
+                <h1>@Model.StatusCode</h1>
+            </div>
+            <h2 class="mt-0">We are sorry, but the page you requested was not found.</h2>
+        }
+        else
+        {
+            <div class="notfound-404">
+                <h1>Error</h1>
+            </div>
+            <h2 class="mt-0">An error occurred while processing your request.</h2>
+        }
+        <a asp-area="@area" asp-action="Index" asp-controller="Home" class="home-btn text-white">Go Home</a>
+    </div>
+</div>
+
+
