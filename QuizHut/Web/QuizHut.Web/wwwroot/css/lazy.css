@@ -11,7 +11,7 @@
 }
 
 .bg-primary {
-    background-color: #4A154B !important
+    background-color: #42abf8 !important
 }
 
 .bg-secondary {
@@ -167,13 +167,13 @@
         }
 
 .btn-primary {
-    background-color: #611F6A;
-    border: 1px solid #611F6A
+    background-color: #42abf8;
+    border: 1px solid #42abf8
 }
 
     .btn-primary:not(:disabled):hover, .btn-primary:not(:disabled):focus, .btn-primary:not(:disabled):active, .btn-primary:not(:disabled).active, .btn-primary:not(:disabled):active:focus, .btn-primary:not(:disabled):active:hover, .btn-primary:not(:disabled).active:focus, .btn-primary:not(:disabled).active:hover, .show > .btn-primary:not(:disabled).dropdown-toggle, .show > .btn-primary:not(:disabled).dropdown-toggle:focus, .show > .btn-primary:not(:disabled).dropdown-toggle:hover {
-        background-color: #4b1852;
-        border: 1px solid #4b1852;
+        background-color: #42abf8;
+        border: 1px solid #42abf8;
         box-shadow: none
     }
 
@@ -367,13 +367,13 @@
     }
 
 .btn-outline-primary {
-    border: 1px solid #611F6A;
-    color: #611F6A
+    border: 1px solid #42abf8;
+    color: #42abf8;
 }
 
     .btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active, .btn-outline-primary.active, .btn-outline-primary:active:focus, .btn-outline-primary:active:hover, .btn-outline-primary.active:focus, .btn-outline-primary.active:hover, .show > .btn-outline-primary.dropdown-toggle, .show > .btn-outline-primary.dropdown-toggle:focus, .show > .btn-outline-primary.dropdown-toggle:hover {
-        background-color: #611F6A;
-        border-color: #611F6A
+        background-color: #42abf8;
+        border-color: #42abf8
     }
 
 .btn-outline-secondary {
@@ -480,11 +480,11 @@ a:not(.nav-link):not(.navbar-brand):not(.btn) {
     }
 
 a.text-primary {
-    color: #611F6A
+    color: #000000
 }
 
     a.text-primary:hover {
-        color: #4b1852 !important
+        color: #000000 !important
     }
 
 .form-control, .custom-select, .custom-file {
@@ -501,7 +501,7 @@ a.text-primary {
 }
 
     .form-control:hover, .form-control:focus, .form-control:active, .custom-select:hover, .custom-select:focus, .custom-select:active, .custom-file:hover, .custom-file:focus, .custom-file:active {
-        border: 1px solid #611F6A;
+        border: 1px solid #42abf8;
         -webkit-box-shadow: none;
         box-shadow: none
     }
@@ -2343,7 +2343,7 @@ body {
 
     .notfound .home-btn {
         color: rgba(255, 0, 36, 0.7);
-        background: #611F6A;
+        background: #42abf8;
     }
 
 @media only screen and (max-width: 767px) {
