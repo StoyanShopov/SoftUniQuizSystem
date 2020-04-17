@@ -1,0 +1,161 @@
+﻿@model AttemtedQuizViewModel
+@{
+    ViewData["Title"] = "Take Quiz";
+    Layout = (string)ViewData["Layout"] ?? "_Layout";
+    var area = (string)ViewData["Area"] ?? "";
+
+}
+<div class="container-fluid">
+    <div class="flex-grow-1">
+        <partial name="_BublesAndCirclesPrtial" />
+    </div>
+    @if (Model.Timer != 0)
+    {
+        <input id="minutes" type="hidden" value="@Model.Timer" />
+        <div id="clockdiv" class="pt-2" style="display:none">
+            <div>
+                <span class="minutes"></span>
+            </div>
+            <div>
+                <span class="seconds"></span>
+            </div>
+        </div>
+    }
+    <div class="col-12 offset-md-2 col-md-8 my-3 row">
+        <form id="@(Model.Questions.Count.ToString())f" method="post" class="col-11 ml-4 mb-5">
+            <div id="details" class="component pt-2">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                    <i class="fa fa-exclamation-circle"></i>
+                    <strong>Warning!</strong> 
+                     You have only one attempt to take this quiz!
+                     When you start, be aware to not leave the page by mistake, you will not be able to return again! 
+                     Good luck!
+                </div>
+                <div class="card mb-3 mt-3">
+                    <div class="card-header text-info pb-0" style="font-size: xx-large">
+                        <i class="far fa-list-alt"></i>
+                        <p class="display-5 d-inline-block">Quiz:</p>
+                    </div>
+                    <div class="card-body pt-1">
+                        <h4 class="card-title">@Model.Name</h4>
+                        <input type="hidden" asp-for="@Model.Name" value="@Model.Name" />
+                        <p class="card-text border-top pt-2" style="display: block;">
+                            <span class="text-primary mr-1">∗</span>@Model.Description
+                        </p>
+                    </div>
+                    <div class="card-footer py-3">
+                        <div class="input-group">
+
+                        </div>
+                        <div class="row mx-1 text-white">
+                            <a id="start" class="btn btn-danger col-md-4 mt-5 offset-md-1">Start</a>
+                            <a class="btn btn-success col-md-4 mt-md-5 mt-2 offset-md-2" asp-area="@area" asp-action="Index" asp-controller="Home">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @* pagination *@
+            @if (Model.Questions.Count > 1)
+            {
+                <div id="pagging" class="text-center my-1" style="display:none">
+                    <ul class="pagination justify-content-center">
+                        <li id="first" class="page-item">
+                            <a class="page-link">
+                                <i class="fas fa-long-arrow-alt-left"></i>
+                            </a>
+                        </li>
+                        @for (int i = 1; i <= Model.Questions.Count; i++)
+                        {
+                            <li class="page-item number @i">
+                                <a class="page-link">
+                                    @i
+                                </a>
+                            </li>
+
+                        }
+                        <li id="last" class="page-item">
+                            <a class="page-link">
+                                <i class="fas fa-long-arrow-alt-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            }
+            @for (int i = 0; i < Model.Questions.Count; i++)
+            {
+                var question = Model.Questions[i];
+
+                <div id="@question.Number" class="component" style="display:none">
+                    <div class="card mb-3">
+                        <div class="card-header text-warning">
+                            <i class="fas fa-question-circle"></i>
+                            @Html.HiddenFor(model => model.Questions[i].Id)
+                            @Html.HiddenFor(model => model.Questions[i].Number)
+                            <span class="text-primary ml-1">Question @question.Number</span>
+                        </div>
+
+                        <div class="card-title text-center m-1">
+                            <h4>@question.Text</h4>
+                        </div>
+                        <hr>
+                        <div class="card-body px-4">
+                            @for (int j = 0; j < question.Answers.Count; j++)
+                            {
+                                var answer = question.Answers[j];
+                                <div class="form-group mb-0">
+                                    <div class="mt-2">
+                                        @Html.EditorFor(x => x.Questions[i].Answers[j].IsRightAnswerAssumption)
+                                        <h6 class="d-inline-block mt-0 ml-1">@answer.Text</h6>
+                                        @Html.HiddenFor(model => model.Questions[i].Answers[j].Id)
+
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="card-footer pb-3">
+                            <div class="row mx-1 text-white">
+                                <a id="prev" class="btn btn-primary col-md-5 mt-2">Previous</a>
+                                <a id="@(question.Number.ToString())next" class="btn btn-primary col-md-5 mt-2 offset-md-2 d-inline-block">Next</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            <input type="hidden" asp-for="@Model.Id" value="@Model.Id" />
+            <button id="submit" type="button" class="btn btn-primary col-md-5 offset-md-3" data-toggle="modal" data-target="#btn" style="display:none">
+                Submit Quiz
+            </button>
+            <!-- the modal -->
+            <div class="modal fade" id="btn" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Attention!</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <h5>Are you sure you want to submit your result?</h5>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-success" type="submit" id="submitResult"
+                                    asp-action="Submit" asp-controller="Quizzes">
+                                Submit
+                            </button>
+                            <button type="button" class="btn btn-danger" data-dismiss="modal">No!</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts
+{
+    <script src="~/js/attemptQuiz.js" asp-append-version="true"></script>
+}
+

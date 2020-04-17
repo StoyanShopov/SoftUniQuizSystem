@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>@this.ViewData["Title"] - @GlobalConstants.SystemName</title>
+
+    <environment names="Development">
+        <link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" asp-append-version="true" />
+        <link href="~/img/favicon.ico" rel="icon" type="image/png">
+
+        <link rel="stylesheet" href="~/css/lazy.css" asp-append-version="true"/>
+        <link rel="stylesheet" href="~/css/demo.css" asp-append-version="true"/>
+        <link rel="stylesheet" href="~/lib/fontawesome/css/all.css" asp-append-version="true"/>
+    </environment>
+    <environment names="Staging,Production">
+        <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" asp-append-version="true" />
+        <link href="~/img/favicon.ico" rel="icon" type="image/png">
+
+        <link rel="stylesheet" href="~/css/lazy.css" asp-append-version="true">
+        <link rel="stylesheet" href="~/css/demo.css" asp-append-version="true">
+        <link rel="stylesheet" href="~/lib/fontawesome/css/all.css" asp-append-version="true"/>
+    </environment>
+</head>
+<body class="index">
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-action="Index" asp-controller="Home">QuizHut</a>
+
+                <button class="navbar-toggler collapsed"
+                        type="button"
+                        data-toggle="collapse"
+                        data-target="#navbarNavDropdown-7"
+                        aria-controls="navbarNavDropdown-7"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNavDropdown-7">
+                    <ul class="navbar-nav ml-auto mx-2">
+                        @RenderSection("About", required: false)
+                        @RenderSection("Register", required: false)
+                        @RenderSection("Login", required: false)
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <partial name="_CookieConsentPartial" />
+    </div>
+    <main role="main" id="page-container">
+        <div id="content-wrap">
+            @this.RenderBody()
+        </div>
+    </main>
+    <partial name="~/Views/Shared/_FooterPartial.cshtml" />
+
+    <environment names="Development">
+        <script src="~/lib/jquery/dist/jquery.js" asp-append-version="true"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.js" asp-append-version="true"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+    </environment>
+    <environment names="Staging,Production">
+        <script src="~/lib/jquery/dist/jquery.min.js" asp-append-version="true"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.min.js" asp-append-version="true"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+    </environment>
+
+    @this.RenderSection("Scripts", required: false)
+</body>
+</html>
