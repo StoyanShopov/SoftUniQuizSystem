@@ -29,8 +29,9 @@
                     </div>
                     <div class="card-footer pb-5">
                         <div class="input-group">
-                            <input type="text" class="form-control" asp-for="Text" placeholder="...">
+                            <textarea rows="15" type="text" asp-for="Text"></textarea>
                         </div>
+                        @*--@Html.Raw(Model.SanitizedContent)*@
                         <span asp-validation-for="@Model.Text" class="text-danger"></span>
                         <div class="row mx-1 text-white">
                             <button type="submit" class="btn btn-primary col-md-5 mt-5">Add Answer</button>
@@ -57,6 +58,16 @@
 @section Scripts {
     <script src="~/js/navigation.js" asp-append-version="true"></script>
     <partial name="_ValidationScriptsPartial" />
+
+    <script src="/lib/tinymce/tinymce.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        tinymce.init({
+            selector: "#Text",
+            plugins: [
+                "image paste table link code media"
+            ]
+        });
+    </script>
 }
 
 

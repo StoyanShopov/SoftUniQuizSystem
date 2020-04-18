@@ -42,52 +42,14 @@ namespace QuizHut.Web.Areas.Identity.Pages.Account.Manage
             public string ConfirmPassword { get; set; }
         }
 
-        public async Task<IActionResult> OnGetAsync()
+        public IActionResult OnGetAsync(string returnUrl = null)
         {
-            var user = await this._userManager.GetUserAsync(this.User);
-            if (user == null)
-            {
-                return this.NotFound($"Unable to load user with ID '{this._userManager.GetUserId(this.User)}'.");
-            }
-
-            var hasPassword = await this._userManager.HasPasswordAsync(user);
-
-            if (hasPassword)
-            {
-                return this.RedirectToPage("./ChangePassword");
-            }
-
-            return this.Page();
+            return this.Redirect("/");
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public IActionResult OnPostAsync(string returnUrl = null)
         {
-            if (!this.ModelState.IsValid)
-            {
-                return this.Page();
-            }
-
-            var user = await this._userManager.GetUserAsync(this.User);
-            if (user == null)
-            {
-                return this.NotFound($"Unable to load user with ID '{this._userManager.GetUserId(this.User)}'.");
-            }
-
-            var addPasswordResult = await this._userManager.AddPasswordAsync(user, this.Input.NewPassword);
-            if (!addPasswordResult.Succeeded)
-            {
-                foreach (var error in addPasswordResult.Errors)
-                {
-                    this.ModelState.AddModelError(string.Empty, error.Description);
-                }
-
-                return this.Page();
-            }
-
-            await this._signInManager.RefreshSignInAsync(user);
-            this.StatusMessage = "Your password has been set.";
-
-            return this.RedirectToPage();
+            return this.Redirect("/");
         }
     }
 }
