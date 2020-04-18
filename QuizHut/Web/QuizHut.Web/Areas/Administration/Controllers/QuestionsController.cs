@@ -36,7 +36,7 @@
         public async Task<IActionResult> AddNewQuestion(QuestionInputModel model)
         {
             var quizId = this.HttpContext.Session.GetString(Constants.QuizSeesionId);
-            var questionId = await this.questionService.CreateQuestionAsync(quizId, model.Text);
+            var questionId = await this.questionService.CreateQuestionAsync(quizId, model.SanitizedContent);
             this.HttpContext.Session.SetString(Constants.CurrentQuestionId, questionId);
             return this.RedirectToAction("AnswerInput", "Answers");
         }
@@ -53,7 +53,7 @@
         [ModelStateValidationActionFilterAttribute]
         public async Task<IActionResult> Edit(QuestionInputModel model)
         {
-            await this.questionService.Update(model.Id, model.Text);
+            await this.questionService.Update(model.Id, model.SanitizedContent);
             var page = this.HttpContext.Session.GetInt32(GlobalConstants.PageToReturnTo);
             return this.RedirectToAction("Display", "Quizzes", new { page });
         }

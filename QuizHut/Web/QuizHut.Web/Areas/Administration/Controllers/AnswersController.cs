@@ -31,7 +31,7 @@
         public async Task<IActionResult> AddNewAnswer(AnswerViewModel model)
         {
             var currentQuestionId = this.HttpContext.Session.GetString(Constants.CurrentQuestionId);
-            await this.answerService.CreateAnswerAsync(model.Text, model.IsRightAnswer, currentQuestionId);
+            await this.answerService.CreateAnswerAsync(model.SanitizedContent, model.IsRightAnswer, currentQuestionId);
 
             return this.RedirectToAction("AnswerInput");
         }
@@ -49,7 +49,7 @@
         [ModelStateValidationActionFilterAttribute]
         public async Task<IActionResult> AppendNewAnswer(AnswerViewModel model)
         {
-            await this.answerService.CreateAnswerAsync(model.Text, model.IsRightAnswer, model.QuestionId);
+            await this.answerService.CreateAnswerAsync(model.SanitizedContent, model.IsRightAnswer, model.QuestionId);
             var page = this.HttpContext.Session.GetInt32(GlobalConstants.PageToReturnTo);
 
             return this.RedirectToAction("Display", "Quizzes", new { page });
@@ -68,7 +68,7 @@
         [ModelStateValidationActionFilterAttribute]
         public async Task<IActionResult> Update(AnswerViewModel model)
         {
-            await this.answerService.UpdateAsync(model.Id, model.Text, model.IsRightAnswer);
+            await this.answerService.UpdateAsync(model.Id, model.SanitizedContent, model.IsRightAnswer);
             var page = this.HttpContext.Session.GetInt32(GlobalConstants.PageToReturnTo);
             return this.RedirectToAction("Display", "Quizzes", new { page });
         }
