@@ -17,6 +17,15 @@
             </button>
             <div class="navbar-collapse text-center collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav ml-auto">
+                    <form method="POST" asp-action="ImportQuestions" asp-controller="Questions" asp-route-id="@Model.Details.Id" enctype="multipart/form-data">
+                        <li class="nav-item m-1">
+                            <input name="file_1"
+                                   type="file"
+                                   onchange="this.form.submit();"
+                                   value="Import Questions"
+                                   class="nav-link  btn btn-primary" />
+                        </li>
+                    </form>
                     <li class="nav-item m-1">
                         <a class="nav-link  btn btn-primary"
                            asp-action="QuestionInput"
@@ -28,7 +37,7 @@
                     <li class="nav-item m-1">
                         <!-- button that opens the modal -->
                         <button type="button" class="nav-link btn btn-primary col-12" data-toggle="modal" data-target="#target">
-                            Delete Quiz
+                            Delete
                         </button>
                         <!-- the modal -->
                         <div class="modal fade" id="target" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -62,6 +71,14 @@
                            asp-controller="Quizzes"
                            asp-route-id="@Model.Details.Id">
                             Edit
+                        </a>
+                    </li>
+                    <li class="nav-item m-1">
+                        <a class="nav-link  btn btn-primary"
+                           asp-action="PDFExport"
+                           asp-controller="Quizzes"
+                           asp-route-id="@Model.Details.Id">
+                            PDF Export
                         </a>
                     </li>
                 </ul>
@@ -146,8 +163,7 @@
     @await Html.PartialAsync("_QuestionDetailsPartial", Model.Question)
 
 }
-<a class="btn btn-outline-primary offset-md-4 col-md-4 mt-2 d-inline-block" asp-action="QuestionInput" asp-controller="Questions" asp-route-id="@Model.Details.Id">Add Question</a>
-<a class="btn btn-outline-primary offset-md-4 col-md-4 mt-2 d-inline-block" target="_blank" asp-action="PDFExport" asp-controller="Quizzes" asp-route-id="@Model.Details.Id">Export To PDF</a>
+
 @if (this.User.IsInRole(GlobalConstants.AdministratorRoleName) && this.ViewData[GlobalConstants.DashboardRequest] != null)
 {
     @section InnerNav
@@ -166,5 +182,7 @@
                 }, 50);
             }
         });
+
+        $("input[name='file_1']").change(function () { this.form.submit(); });
     </script>
 }

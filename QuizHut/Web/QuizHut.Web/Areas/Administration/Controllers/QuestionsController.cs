@@ -2,6 +2,7 @@
 {
     using System.Threading.Tasks;
 
+    using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using QuizHut.Common;
@@ -13,10 +14,12 @@
     public class QuestionsController : AdministrationController
     {
         private readonly IQuestionsService questionService;
+        private readonly IWebHostEnvironment env;
 
-        public QuestionsController(IQuestionsService questionService)
+        public QuestionsController(IQuestionsService questionService, IWebHostEnvironment env)
         {
             this.questionService = questionService;
+            this.env = env;
         }
 
         [HttpGet]
@@ -39,6 +42,17 @@
             var questionId = await this.questionService.CreateQuestionAsync(quizId, model.Text);
             this.HttpContext.Session.SetString(Constants.CurrentQuestionId, questionId);
             return this.RedirectToAction("AnswerInput", "Answers");
+        }
+
+        [HttpPost]
+        [ModelStateValidationActionFilterAttribute]
+        public Task<IActionResult> ImportQuestions([FromForm(Name = "file_1")] IFormFile file, string id)
+        {
+            var dir = this.env.ContentRootPath;
+
+            this.questionService.ImportQuestions(id, file, dir);
+
+            return null;
         }
 
         [HttpGet]
