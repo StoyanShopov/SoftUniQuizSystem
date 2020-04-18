@@ -31,15 +31,18 @@
         }
 
         public async Task<T> GetByIdAsync<T>(string id)
-        => await this.repository
-            .AllAsNoTracking()
-            .Where(x => x.Id == id)
-            .To<T>()
-            .FirstOrDefaultAsync();
+            => await this.repository
+                .AllAsNoTracking()
+                .Where(x => x.Id == id)
+                .To<T>()
+                .FirstOrDefaultAsync();
 
         public async Task UpdateAsync(string id, string text, bool isRightAnswer)
         {
-            var answer = await this.repository.AllAsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            var answer = await this.repository
+                .AllAsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id);
+
             answer.Text = text;
             answer.IsRightAnswer = isRightAnswer;
 
@@ -49,8 +52,12 @@
 
         public async Task DeleteAsync(string id)
         {
-            var answer = await this.repository.AllAsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            var answer = await this.repository
+                .AllAsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id);
+
             this.repository.Delete(answer);
+
             await this.repository.SaveChangesAsync();
         }
     }
