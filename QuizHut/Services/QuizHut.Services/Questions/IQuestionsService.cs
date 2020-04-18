@@ -3,9 +3,13 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
+    using Microsoft.AspNetCore.Http;
+
     public interface IQuestionsService
     {
         Task<string> CreateQuestionAsync(string quizId, string questionText);
+
+        Task<string> ImportQuestionsAsync(string quizId, IFormFile file);
 
         Task DeleteQuestionByIdAsync(string id);
 

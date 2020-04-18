@@ -2,6 +2,7 @@
 {
     using System.Threading.Tasks;
 
+    using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using QuizHut.Common;
@@ -13,10 +14,12 @@
     public class QuestionsController : AdministrationController
     {
         private readonly IQuestionsService questionService;
+        private readonly IWebHostEnvironment env;
 
-        public QuestionsController(IQuestionsService questionService)
+        public QuestionsController(IQuestionsService questionService, IWebHostEnvironment env)
         {
             this.questionService = questionService;
+            this.env = env;
         }
 
         [HttpGet]
@@ -36,9 +39,17 @@
         public async Task<IActionResult> AddNewQuestion(QuestionInputModel model)
         {
             var quizId = this.HttpContext.Session.GetString(Constants.QuizSeesionId);
-            var questionId = await this.questionService.CreateQuestionAsync(quizId, model.SanitizedContent);
+            var questionId = await this.questionService.CreateQuestionAsync(quizId, model.Text);
             this.HttpContext.Session.SetString(Constants.CurrentQuestionId, questionId);
             return this.RedirectToAction("AnswerInput", "Answers");
+        }
+
+        [HttpPost]
+        [ModelStateValidationActionFilterAttribute]
+        public async Task<IActionResult> ImportQuestions([FromForm(Name = "file_1")] IFormFile file, string id)
+        {
+            var quizId = await this.questionService.ImportQuestionsAsync(id, file);
+            return this.RedirectToAction("Display", "Quizzes", new { id = quizId });
         }
 
         [HttpGet]
@@ -53,7 +64,7 @@
         [ModelStateValidationActionFilterAttribute]
         public async Task<IActionResult> Edit(QuestionInputModel model)
         {
-            await this.questionService.Update(model.Id, model.SanitizedContent);
+            await this.questionService.Update(model.Id, model.Text);
             var page = this.HttpContext.Session.GetInt32(GlobalConstants.PageToReturnTo);
             return this.RedirectToAction("Display", "Quizzes", new { page });
         }
