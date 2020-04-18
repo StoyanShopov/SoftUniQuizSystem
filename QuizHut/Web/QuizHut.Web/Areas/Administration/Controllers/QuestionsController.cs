@@ -46,13 +46,10 @@
 
         [HttpPost]
         [ModelStateValidationActionFilterAttribute]
-        public Task<IActionResult> ImportQuestions([FromForm(Name = "file_1")] IFormFile file, string id)
+        public async Task<IActionResult> ImportQuestions([FromForm(Name = "file_1")] IFormFile file, string id)
         {
-            var dir = this.env.ContentRootPath;
-
-            this.questionService.ImportQuestions(id, file, dir);
-
-            return null;
+            var quizId = await this.questionService.ImportQuestionsAsync(id, file);
+            return this.RedirectToAction("Display", "Quizzes", new { id = quizId });
         }
 
         [HttpGet]

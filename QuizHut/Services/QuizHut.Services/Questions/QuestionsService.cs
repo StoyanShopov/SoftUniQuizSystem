@@ -50,57 +50,59 @@
             return question.Id;
         }
 
-        public async void ImportQuestions(string quizId, IFormFile file, string dir)
+        public async Task<string> ImportQuestionsAsync(string quizId, IFormFile formFile)
         {
-            var quiz = this.quizRepository.AllAsNoTracking()
-                .FirstOrDefault(q => q.Id == quizId);
+            var quiz = await this.quizRepository.All()
+                .FirstOrDefaultAsync(q => q.Id == quizId);
 
-            using (var fs = new FileStream(Path.Combine(dir, file.FileName), FileMode.Create))
+            await using (var stream = new MemoryStream())
             {
-                file.CopyTo(fs);
+                await formFile.CopyToAsync(stream);
 
                 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-                using (var package = new ExcelPackage(fs))
-                {
-                    ExcelWorksheet worksheet = package.Workbook.Worksheets.FirstOrDefault();
+                using var package = new ExcelPackage(stream);
+                ExcelWorksheet worksheet = package.Workbook.Worksheets.FirstOrDefault();
 
-                    var rows = worksheet.Dimension.Rows;
-                    var cols = worksheet.Dimension.Columns;
-                    for (int row = 2; row <= rows; row++)
+                var rows = worksheet.Dimension.Rows;
+                var cols = worksheet.Dimension.Columns;
+
+                for (int row = 2; row <= rows; row++)
+                {
+                    var questionText = worksheet.Cells[row, 1].Text;
+
+                    var question = new Question
                     {
-                        var questionText = worksheet.Cells[row, 1].Text;
-                        var question = new Question
+                        QuizId = quiz.Id,
+                        Number = quiz.Questions.Count + 1,
+                        Text = questionText,
+                    };
+
+                    await this.questionRepository.AddAsync(question);
+
+                    for (int col = 2; col <= cols; col++)
+                    {
+                        var answerText = worksheet.Cells[row, col].Text;
+                        var isRightAnswer = worksheet.Cells[row, col].Style.Fill.BackgroundColor.Theme != null;
+
+                        var answer = new Answer
                         {
-                            Quiz = quiz,
-                            Number = quiz.Questions.Count + 1,
-                            Text = questionText,
+                            Text = answerText,
+                            IsRightAnswer = isRightAnswer,
+                            Question = question,
                         };
 
-                        await this.questionRepository.AddAsync(question);
-
-                        for (int col = 2; col <= cols; col++)
-                        {
-                            var answerText = worksheet.Cells[row, col].Text;
-                            var isRightAnswer = worksheet.Cells[row, col].Style.Fill.BackgroundColor.Theme != null;
-
-                            var answer = new Answer
-                            {
-                                Text = answerText,
-                                IsRightAnswer = isRightAnswer,
-                                Question = question,
-                            };
-
-                            await this.answerRepository.AddAsync(answer);
-                        }
+                        await this.answerRepository.AddAsync(answer);
                     }
                 }
 
-                File.Delete(Path.Combine(dir, file.FileName));
-
-                await this.questionRepository.SaveChangesAsync();
-                await this.answerRepository.SaveChangesAsync();
+                package.Dispose();
             }
+
+            await this.questionRepository.SaveChangesAsync();
+            await this.answerRepository.SaveChangesAsync();
+
+            return quizId;
         }
 
         public async Task DeleteQuestionByIdAsync(string id)

@@ -9,7 +9,7 @@
     {
         Task<string> CreateQuestionAsync(string quizId, string questionText);
 
-        void ImportQuestions(string quizId, IFormFile file, string dir);
+        Task<string> ImportQuestionsAsync(string quizId, IFormFile file);
 
         Task DeleteQuestionByIdAsync(string id);
 
