@@ -1,7 +1,7 @@
 ﻿namespace QuizHut.Web.ViewModels.Answers
 {
     using System.ComponentModel.DataAnnotations;
-
+    using Ganss.XSS;
     using QuizHut.Data.Models;
     using QuizHut.Services.Mapping;
     using QuizHut.Web.ViewModels.Shared;
@@ -16,6 +16,8 @@
             ErrorMessage = ModelValidations.Error.RangeMessage,
             MinimumLength = ModelValidations.Answers.TextMinLength)]
         public string Text { get; set; }
+
+        public string SanitizedContent => new HtmlSanitizer().Sanitize(this.Text);
 
         public bool IsRightAnswer { get; set; }
 

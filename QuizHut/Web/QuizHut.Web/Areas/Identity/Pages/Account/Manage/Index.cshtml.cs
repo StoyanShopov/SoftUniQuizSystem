@@ -42,14 +42,27 @@ namespace QuizHut.Web.Areas.Identity.Pages.Account.Manage
             public string PhoneNumber { get; set; }
         }
 
-        public IActionResult OnGetAsync()
+        public IActionResult OnGetAsync(string returnUrl = null)
         {
             return this.Redirect("/");
         }
 
-        public IActionResult OnPostAsync()
+        public IActionResult OnPostAsync(string returnUrl = null)
         {
             return this.Redirect("/");
+        }
+
+        private async Task LoadAsync(ApplicationUser user)
+        {
+            var userName = await this.userManager.GetUserNameAsync(user);
+            var phoneNumber = await this.userManager.GetPhoneNumberAsync(user);
+
+            this.Username = userName;
+
+            this.Input = new InputModel
+            {
+                PhoneNumber = phoneNumber,
+            };
         }
     }
 }

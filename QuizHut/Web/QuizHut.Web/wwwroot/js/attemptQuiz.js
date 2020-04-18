@@ -33,10 +33,6 @@
                 return 'Are you sure you want to leave?';
             });
 
-            $('#submitResult').click(function () {
-                $(window).unbind('beforeunload');
-            });
-
             if (mins) {
                 $('#clockdiv').show();
                 startTimer();

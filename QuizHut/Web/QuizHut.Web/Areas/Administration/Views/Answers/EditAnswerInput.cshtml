@@ -5,7 +5,7 @@
 
 <div class="container-fluid">
     <div class="flex-grow-1">
- 
+        <partial name="_BublesAndCirclesPrtial" />
     </div>
     <div class="col-12 offset-md-2 col-md-8 row">
         <form method="post" class="col-11 ml-4" asp-area="Administration" asp-action="Update" asp-controller="Answers">
@@ -54,5 +54,15 @@
 @section Scripts {
     <script src="~/js/navigation.js" asp-append-version="true"></script>
     <partial name="_ValidationScriptsPartial" />
+
+    <script src="/lib/tinymce/tinymce.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        tinymce.init({
+            selector: "#Text",
+            plugins: [
+                "image paste table link code media"
+            ]
+        });
+    </script>
 }
 

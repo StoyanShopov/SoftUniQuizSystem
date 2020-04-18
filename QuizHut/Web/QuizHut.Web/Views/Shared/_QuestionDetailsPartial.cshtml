@@ -22,10 +22,10 @@
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item m-1">
                         <a class="nav-link  btn btn-primary col-lg-12"
-                                asp-area="Administration"
-                                asp-action="ApendAnswerInput"
-                                asp-controller="Answers"
-                                asp-route-id="@Model.Id">
+                           asp-area="Administration"
+                           asp-action="ApendAnswerInput"
+                           asp-controller="Answers"
+                           asp-route-id="@Model.Id">
                             Add Answer
                         </a>
                     </li>
@@ -78,8 +78,8 @@
     <input type="text"
            class="form-control form-control-lg flex-grow-1 mr-2 d-inline text-truncate"
            disabled
-           name="@Model.Text"
-           value="@Model.Text">
+           name="@Html.Raw(Model.SanitizedContent)"
+           value="@Html.Raw(Model.SanitizedContent)">
     @*answers*@
     @for (int i = 0; i < Model.Answers.Count; i++)
     {
@@ -154,8 +154,8 @@
             <input type="text"
                    class="form-control form-control-lg flex-grow-1 mr-2 d-inline text-truncate"
                    disabled
-                   asp-for="@answer.Text"
-                   value="@answer.Text">
+                   asp-for="@answer.SanitizedContent"
+                   value="@answer.SanitizedContent" />
         </div>
     }
 </div>

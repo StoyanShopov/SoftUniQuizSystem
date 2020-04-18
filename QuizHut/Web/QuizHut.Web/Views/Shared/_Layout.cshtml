@@ -8,7 +8,7 @@
 
     <environment names="Development">
         <link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" asp-append-version="true" />
-        <link href="~/img/logo.softuni.svg" rel="icon" type="image/png">
+        <link href="~/img/favicon.ico" rel="icon" type="image/png">
 
         <link rel="stylesheet" href="~/css/lazy.css" asp-append-version="true"/>
         <link rel="stylesheet" href="~/css/demo.css" asp-append-version="true"/>
@@ -16,7 +16,7 @@
     </environment>
     <environment names="Staging,Production">
         <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" asp-append-version="true" />
-        <link href="~/img/logo.softuni.svg" rel="icon" type="image/png">
+        <link href="~/img/favicon.ico" rel="icon" type="image/png">
 
         <link rel="stylesheet" href="~/css/lazy.css" asp-append-version="true">
         <link rel="stylesheet" href="~/css/demo.css" asp-append-version="true">
@@ -27,7 +27,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-action="Index" asp-controller="Home">SoftUni Quiz System</a>
+                <a class="navbar-brand" asp-area="" asp-action="Index" asp-controller="Home">SoftUni</a>
 
                 <button class="navbar-toggler collapsed"
                         type="button"
@@ -39,7 +39,7 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNavDropdown-7">
-                    <ul class="navbar-nav ml-auto mx-2 btn-lg">
+                    <ul class="navbar-nav ml-auto mx-2">
                         @RenderSection("About", required: false)
                         @RenderSection("Login", required: false)
                     </ul>

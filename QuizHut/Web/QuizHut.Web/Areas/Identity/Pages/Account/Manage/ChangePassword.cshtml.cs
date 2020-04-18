@@ -53,12 +53,12 @@ namespace QuizHut.Web.Areas.Identity.Pages.Account.Manage
             public string ConfirmPassword { get; set; }
         }
 
-        public IActionResult OnGetAsync()
+        public IActionResult OnGetAsync(string returnUrl = null)
         {
             return this.Redirect("/");
         }
 
-        public IActionResult OnPostAsync()
+        public IActionResult OnPostAsync(string returnUrl = null)
         {
             return this.Redirect("/");
         }

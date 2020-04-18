@@ -339,7 +339,7 @@
 
             if (eventStatus == Status.Active)
             {
-                foreach (var name in studentsNames.Distinct())
+                foreach (var name in studentsNames)
                 {
                     await this.hub.Clients.Group(name).SendAsync("NewActiveEventMessage");
                 }
@@ -350,7 +350,7 @@
             }
             else
             {
-                foreach (var name in studentsNames.Distinct())
+                foreach (var name in studentsNames)
                 {
                     await this.hub.Clients.Group(name).SendAsync("NewPendingEventMessage");
                 }

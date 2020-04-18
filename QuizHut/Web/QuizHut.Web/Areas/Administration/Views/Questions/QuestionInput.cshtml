@@ -44,4 +44,14 @@
 @section Scripts {
     <script src="~/js/navigation.js" asp-append-version="true"></script>
     <partial name="_ValidationScriptsPartial" />
+
+    <script src="/lib/tinymce/tinymce.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        tinymce.init({
+            selector: "#Text",
+            plugins: [
+                "image paste table link code media"
+            ]
+        });
+    </script>
 }
