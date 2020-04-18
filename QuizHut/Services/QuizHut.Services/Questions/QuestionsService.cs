@@ -52,6 +52,8 @@
 
         public async Task<string> ImportQuestionsAsync(string quizId, IFormFile formFile)
         {
+            await this.DeleteAllQuestionsInQuiz(quizId);
+
             var quiz = await this.quizRepository.All()
                 .FirstOrDefaultAsync(q => q.Id == quizId);
 
@@ -83,7 +85,7 @@
                     for (int col = 2; col <= cols; col++)
                     {
                         var answerText = worksheet.Cells[row, col].Text;
-                        var isRightAnswer = worksheet.Cells[row, col].Style.Fill.BackgroundColor.Theme != null;
+                        var isRightAnswer = worksheet.Cells[row, col].Style.Fill.BackgroundColor.Rgb != null;
 
                         var answer = new Answer
                         {
@@ -107,7 +109,10 @@
 
         public async Task DeleteQuestionByIdAsync(string id)
         {
-            var question = await this.questionRepository.AllAsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            var question = await this.questionRepository
+                .AllAsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id);
+
             this.questionRepository.Delete(question);
             await this.questionRepository.SaveChangesAsync();
             await this.UpdateAllQuestionsInQuizNumeration(question.QuizId);
@@ -160,5 +165,20 @@
             .Where(x => x.QuizId == quizId && x.Number == number)
             .To<T>()
             .FirstOrDefaultAsync();
+
+        private async Task DeleteAllQuestionsInQuiz(string quizId)
+        {
+            var questions = this.quizRepository
+                .AllAsNoTracking()
+                .Where(q => q.Id == quizId)
+                .Select(q => q.Questions.Select(qq => qq.Id).ToList())
+                .ToList()
+                .FirstOrDefault();
+
+            foreach (var questionId in questions)
+            {
+                await this.DeleteQuestionByIdAsync(questionId);
+            }
+        }
     }
 }
