@@ -17,6 +17,13 @@
             </button>
             <div class="navbar-collapse text-center collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav ml-auto">
+                    <form method="POST" asp-action="ImportQuestions" asp-controller="Questions" asp-route-id="@Model.Details.Id" enctype="multipart/form-data">
+                        <input name="file_1"
+                                   type="file"
+                                   onchange="this.form.submit();"
+                                   value="Import Questions"
+                                   class="nav-link btn btn-primary col-12" />
+                    </form>
                     <li class="nav-item m-1">
                         <a class="nav-link  btn btn-primary"
                            asp-action="QuestionInput"

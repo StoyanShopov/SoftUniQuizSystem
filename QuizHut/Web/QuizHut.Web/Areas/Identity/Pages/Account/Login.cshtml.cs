@@ -5,15 +5,22 @@ namespace QuizHut.Web.Areas.Identity.Pages.Account
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.Linq;
+    using System.Net;
+    using System.Net.Http;
+    using System.Text;
+    using System.Text.Encodings.Web;
+    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
-
+    using Hangfire.Dashboard;
     using Microsoft.AspNetCore.Authentication;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.RazorPages;
+    using Microsoft.AspNetCore.WebUtilities;
     using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json;
     using QuizHut.Common;
     using QuizHut.Data.Models;
 
@@ -23,13 +30,15 @@ namespace QuizHut.Web.Areas.Identity.Pages.Account
         private readonly UserManager<ApplicationUser> userManager;
         private readonly SignInManager<ApplicationUser> signInManager;
         private readonly ILogger<LoginModel> logger;
+        private readonly IHttpClientFactory clientFactory;
 
         public LoginModel(
             SignInManager<ApplicationUser> signInManager,
             ILogger<LoginModel> logger,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager, IHttpClientFactory clientFactory)
         {
             this.userManager = userManager;
+            this.clientFactory = clientFactory;
             this.signInManager = signInManager;
             this.logger = logger;
         }
@@ -47,8 +56,7 @@ namespace QuizHut.Web.Areas.Identity.Pages.Account
         public class InputModel
         {
             [Required]
-            [EmailAddress]
-            public string Email { get; set; }
+            public string Username { get; set; }
 
             [Required]
             [DataType(DataType.Password)]
@@ -85,10 +93,23 @@ namespace QuizHut.Web.Areas.Identity.Pages.Account
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await this.signInManager.PasswordSignInAsync(this.Input.Email, this.Input.Password, this.Input.RememberMe, lockoutOnFailure: false);
+
+                //if user doesn't exists
+                var userExists = await CheckIfUserExistsAsync(this.Input.Username, this.Input.Password);
+
+                if (!userExists)
+                {
+                    return this.Page();
+                }
+
+                //RegisterUserIfHeIsNew
+                await RegisterUserIfIsNew(this.Input.Username, this.Input.Password);
+
+                var result = await this.signInManager.PasswordSignInAsync(this.Input.Username, this.Input.Password, this.Input.RememberMe, lockoutOnFailure: false);
+
                 if (result.Succeeded)
                 {
-                    var user = await this.userManager.FindByEmailAsync(this.Input.Email);
+                    var user = await this.userManager.FindByNameAsync(this.Input.Username);
                     var roles = await this.userManager.GetRolesAsync(user);
 
                     if (roles.Count > 0)
@@ -121,6 +142,60 @@ namespace QuizHut.Web.Areas.Identity.Pages.Account
 
             // If we got this far, something failed, redisplay form
             return this.Page();
+        }
+
+        private async Task RegisterUserIfIsNew(string inputUsername, string inputPassword)
+        {
+            var user = await this.userManager.FindByNameAsync(this.Input.Username);
+
+            if (user != null)
+            {
+                return;
+            }
+
+            user = new ApplicationUser { UserName = this.Input.Username };
+            await this.userManager.CreateAsync(user, this.Input.Password);
+        }
+
+        private async Task<bool> CheckIfUserExistsAsync(string inputUsername, string inputPassword)
+        {
+            var targetUrl = "https://judge.softuni.bg/Account/Login";
+            var request = new HttpRequestMessage(HttpMethod.Get, targetUrl);
+
+            var client = clientFactory.CreateClient();
+            var response = await client.SendAsync(request);
+            var htmlResult = await response.Content.ReadAsStringAsync();
+            var requestVerificationToken = ExtractRequestVerificationToken(htmlResult);
+          
+            var keyValuePairCollection = new Dictionary<string, string>
+            {
+                { "UserName", inputUsername },
+                { "Password", inputPassword },
+                { "__RequestVerificationToken", requestVerificationToken },
+            };
+            var content = new FormUrlEncodedContent(keyValuePairCollection);
+
+            clientFactory.CreateClient();
+            response = await client.PostAsync(targetUrl, content);
+            htmlResult = await response.Content.ReadAsStringAsync();
+
+            if (htmlResult.Contains("action=\"/Account/LogOff\"")
+                && htmlResult.Contains($"<a class=\"text-primary\" href=\"/Users/Profile\" title=\"Settings\">Hello, {inputUsername}!</a>"))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private string ExtractRequestVerificationToken(string content)
+        {
+            var pattern = "__RequestVerificationToken.*value=\"[A-Za-z0-9_-]+\"";
+            var valuePattern = "[A-Za-z0-9_-]{30,}";
+            var extracted = Regex.Match(content, pattern).Value;
+            var value = Regex.Match(extracted, valuePattern).Value;
+
+            return value;
         }
     }
 }

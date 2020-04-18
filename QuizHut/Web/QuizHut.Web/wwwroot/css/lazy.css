@@ -1782,7 +1782,7 @@ html:not([dir="rtl"]) .noUi-horizontal .noUi-handle {
     }
 
 .pagination .page-item.active a.page-link {
-    background-color: #611F6A;
+    background-color: #42abf8;
     border-radius: .25rem;
     box-shadow: 0px 3px 5px rgba(97,31,106,0.2);
     color: #fff

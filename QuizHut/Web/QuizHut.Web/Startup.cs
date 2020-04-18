@@ -95,6 +95,8 @@
                 options.EnableDetailedErrors = true;
             });
 
+            services.AddHttpClient();
+
             // Data repositories
             services.AddScoped(typeof(IDeletableEntityRepository<>), typeof(EfDeletableEntityRepository<>));
             services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
