@@ -53,24 +53,98 @@ namespace QuizHut.Web.Areas.Identity.Pages.Account.Manage
             public string NewEmail { get; set; }
         }
 
-        public IActionResult OnGetAsync()
+        public async Task<IActionResult> OnGetAsync()
         {
-            return this.Redirect("/");
+            var user = await this.userManager.GetUserAsync(this.User);
+            if (user == null)
+            {
+                return this.NotFound($"Unable to load user with ID '{this.userManager.GetUserId(this.User)}'.");
+            }
+
+            await this.LoadAsync(user);
+            return this.Page();
         }
 
-        public IActionResult OnPostAsync()
+        public async Task<IActionResult> OnPostChangeEmailAsync()
         {
-            return this.Redirect("/");
+            var user = await this.userManager.GetUserAsync(this.User);
+            if (user == null)
+            {
+                return this.NotFound($"Unable to load user with ID '{this.userManager.GetUserId(this.User)}'.");
+            }
+
+            if (!this.ModelState.IsValid)
+            {
+                await this.LoadAsync(user);
+                return this.Page();
+            }
+
+            var email = await this.userManager.GetEmailAsync(user);
+            if (this.Input.NewEmail != email)
+            {
+                var userId = await this.userManager.GetUserIdAsync(user);
+                var code = await this.userManager.GenerateChangeEmailTokenAsync(user, this.Input.NewEmail);
+                var callbackUrl = this.Url.Page(
+                    "/Account/ConfirmEmailChange",
+                    pageHandler: null,
+                    values: new { userId, email = this.Input.NewEmail, code },
+                    protocol: this.Request.Scheme);
+                await this.emailSender.SendEmailAsync(
+                    this.Input.NewEmail,
+                    "Confirm your email",
+                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                this.StatusMessage = "Confirmation link to change email sent. Please check your email.";
+                return this.RedirectToPage();
+            }
+
+            this.StatusMessage = "Your email is unchanged.";
+            return this.RedirectToPage();
         }
 
-        public IActionResult OnPostSendVerificationEmailAsync()
+        public async Task<IActionResult> OnPostSendVerificationEmailAsync()
         {
-            return this.Redirect("/");
+            var user = await this.userManager.GetUserAsync(this.User);
+            if (user == null)
+            {
+                return this.NotFound($"Unable to load user with ID '{this.userManager.GetUserId(this.User)}'.");
+            }
+
+            if (!this.ModelState.IsValid)
+            {
+                await this.LoadAsync(user);
+                return this.Page();
+            }
+
+            var userId = await this.userManager.GetUserIdAsync(user);
+            var email = await this.userManager.GetEmailAsync(user);
+            var code = await this.userManager.GenerateEmailConfirmationTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            var callbackUrl = Url.Page(
+                "/Account/ConfirmEmail",
+                pageHandler: null,
+                values: new { area = "Identity", userId = userId, code = code },
+                protocol: Request.Scheme);
+            await this.emailSender.SendEmailAsync(
+                email,
+                "Confirm your email",
+                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+            this.StatusMessage = "Verification email sent. Please check your email.";
+            return this.RedirectToPage();
         }
 
-        private IActionResult LoadAsync(ApplicationUser user)
+        private async Task LoadAsync(ApplicationUser user)
         {
-            return this.Redirect("/");
+            var email = await this.userManager.GetEmailAsync(user);
+            this.Email = email;
+
+            this.Input = new InputModel
+            {
+                NewEmail = email,
+            };
+
+            this.IsEmailConfirmed = await this.userManager.IsEmailConfirmedAsync(user);
         }
     }
 }

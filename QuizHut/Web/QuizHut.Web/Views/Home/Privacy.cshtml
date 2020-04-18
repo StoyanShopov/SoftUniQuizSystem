@@ -24,7 +24,15 @@
             </a>
         </li>
     }
-@section Login
+    @section Register
+    {
+        <li class="nav-item">
+            <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">
+                Register
+            </a>
+        </li>
+    }
+    @section Login
     {
         <li class="nav-item">
             <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">
@@ -36,7 +44,16 @@
 else if (!this.User.IsInRole(GlobalConstants.AdministratorRoleName)
                                && !this.User.IsInRole(GlobalConstants.TeacherRoleName))
 {
-@section Logout
+    @section Profile
+{
+
+        <li class="nav-item">
+            <a class="btn btn-outline-white ml-2" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
+                <i class="fas fa-address-card"></i>  Profile
+            </a>
+        </li>
+    }
+    @section Logout
 {
         <li class="nav-item text-primary">
             <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@(this.Url.Action("Index", "Home", new { area = string.Empty } ))">

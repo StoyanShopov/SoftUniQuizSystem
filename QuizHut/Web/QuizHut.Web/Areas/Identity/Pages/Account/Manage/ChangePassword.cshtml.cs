@@ -53,14 +53,52 @@ namespace QuizHut.Web.Areas.Identity.Pages.Account.Manage
             public string ConfirmPassword { get; set; }
         }
 
-        public IActionResult OnGetAsync()
+        public async Task<IActionResult> OnGetAsync()
         {
-            return this.Redirect("/");
+            var user = await this._userManager.GetUserAsync(this.User);
+            if (user == null)
+            {
+                return this.NotFound($"Unable to load user with ID '{this._userManager.GetUserId(this.User)}'.");
+            }
+
+            var hasPassword = await this._userManager.HasPasswordAsync(user);
+            if (!hasPassword)
+            {
+                return this.RedirectToPage("./SetPassword");
+            }
+
+            return this.Page();
         }
 
-        public IActionResult OnPostAsync()
+        public async Task<IActionResult> OnPostAsync()
         {
-            return this.Redirect("/");
+            if (!this.ModelState.IsValid)
+            {
+                return this.Page();
+            }
+
+            var user = await this._userManager.GetUserAsync(this.User);
+            if (user == null)
+            {
+                return this.NotFound($"Unable to load user with ID '{this._userManager.GetUserId(this.User)}'.");
+            }
+
+            var changePasswordResult = await this._userManager.ChangePasswordAsync(user, this.Input.OldPassword, this.Input.NewPassword);
+            if (!changePasswordResult.Succeeded)
+            {
+                foreach (var error in changePasswordResult.Errors)
+                {
+                    this.ModelState.AddModelError(string.Empty, error.Description);
+                }
+
+                return this.Page();
+            }
+
+            await this._signInManager.RefreshSignInAsync(user);
+            this._logger.LogInformation("User changed their password successfully.");
+            this.StatusMessage = "Your password has been changed.";
+
+            return this.RedirectToPage();
         }
     }
 }

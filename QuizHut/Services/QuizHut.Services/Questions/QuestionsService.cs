@@ -25,7 +25,7 @@
             var quiz = await this.quizRepository.AllAsNoTracking().Select(x => new
             {
                 x.Id,
-                Questions = x.Questions.Count(),
+                Questions = x.Questions.Count,
             }).FirstOrDefaultAsync(x => x.Id == quizId);
 
             var question = new Question
@@ -89,7 +89,7 @@
             .ToListAsync();
 
         public int GetAllByQuizIdCount(string id)
-        => this.repository.AllAsNoTracking().Where(x => x.QuizId == id).Count();
+        => this.repository.AllAsNoTracking().Count(x => x.QuizId == id);
 
         public async Task<T> GetQuestionByQuizIdAndNumberAsync<T>(string quizId, int number)
         => await this.repository.AllAsNoTracking()

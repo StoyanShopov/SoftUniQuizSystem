@@ -33,7 +33,7 @@
                 CreatorId = creatorId,
             };
 
-            var passwordEntitiy = new Password() { Content = password, QuizId = quiz.Id };
+            var passwordEntitiy = new Password { Content = password, QuizId = quiz.Id };
             await this.passwordRepository.AddAsync(passwordEntitiy);
             await this.passwordRepository.SaveChangesAsync();
 
@@ -114,7 +114,7 @@
             .Select(x => x.Id)
             .FirstOrDefaultAsync();
 
-        public async Task<bool[]> HasUserPermition(string userId, string quizId, bool isQuizTaken)
+        public async Task<bool> HasUserPermition(string userId, string quizId)
         {
             var quizQuery = this.quizRepository
                 .AllAsNoTracking()
@@ -123,18 +123,13 @@
             var creatorId = await quizQuery.Select(x => x.CreatorId).FirstOrDefaultAsync();
             if (creatorId == userId)
             {
-                return new bool[] { true, true };
-            }
-
-            if (isQuizTaken)
-            {
-                return new bool[] { false, false };
+                return true;
             }
 
             var eventIsActive = await quizQuery.Select(x => x.Event.Status == Status.Active).FirstOrDefaultAsync();
             if (!eventIsActive)
             {
-                return new bool[] { false, false };
+                return false;
             }
 
             var results = await quizQuery
@@ -142,7 +137,7 @@
                 .ToListAsync();
             if (results.Count() > 0)
             {
-                return new bool[] { false, false };
+                return false;
             }
 
             var eventGroups = await quizQuery
@@ -151,7 +146,7 @@
                 .Any(x => x.StudentId == userId)))
                 .ToListAsync();
 
-            return eventGroups.Count() > 0 ? new bool[] { true, false } : new bool[] { false, false };
+            return eventGroups.Count() > 0;
         }
 
         public async Task AssignQuizToEventAsync(string eventId, string quizId)
