@@ -30,7 +30,7 @@
         [ModelStateValidationActionFilterAttribute]
         public async Task<IActionResult> AddNewAnswer(AnswerViewModel model)
         {
-            var currentQuestionId = this.HttpContext
+             var currentQuestionId = this.HttpContext
                 .Session
                 .GetString(Constants.CurrentQuestionId);
 
