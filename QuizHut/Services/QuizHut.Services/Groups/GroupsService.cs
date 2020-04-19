@@ -37,9 +37,15 @@
 
         public async Task<string> CreateGroupAsync(string name, string creatorId)
         {
-            var group = new Group() { Name = name, CreatorId = creatorId };
+            var group = new Group
+            {
+                Name = name,
+                CreatorId = creatorId,
+            };
+
             await this.repository.AddAsync(group);
             await this.repository.SaveChangesAsync();
+
             return group.Id;
         }
 
@@ -57,15 +63,20 @@
                 query = query.Where(x => !x.EventsGroups.Any(x => x.EventId == eventId));
             }
 
-            return await query.OrderByDescending(x => x.CreatedOn).To<T>().ToListAsync();
+            var result = await query
+                .OrderByDescending(x => x.CreatedOn)
+                .To<T>()
+                .ToListAsync();
+
+            return result;
         }
 
         public async Task<T> GetGroupModelAsync<T>(string groupId)
-         => await this.repository
-            .AllAsNoTracking()
-            .Where(x => x.Id == groupId)
-            .To<T>()
-            .FirstOrDefaultAsync();
+            => await this.repository
+               .AllAsNoTracking()
+               .Where(x => x.Id == groupId)
+               .To<T>()
+               .FirstOrDefaultAsync();
 
         public async Task DeleteAsync(string groupId)
         {
@@ -73,42 +84,51 @@
                 .AllAsNoTracking()
                 .Where(x => x.Id == groupId)
                 .FirstOrDefaultAsync();
+
             this.repository.Delete(group);
+
             await this.repository.SaveChangesAsync();
         }
 
         public async Task DeleteEventFromGroupAsync(string groupId, string eventId)
         {
-            await this.eventsGroupsService.DeleteAsync(eventId, groupId);
+            await this.eventsGroupsService
+                .DeleteAsync(eventId, groupId);
         }
 
         public async Task DeleteStudentFromGroupAsync(string groupId, string studentId)
         {
-            await this.studentsGroupsService.DeleteAsync(groupId, studentId);
+            await this.studentsGroupsService
+                .DeleteAsync(groupId, studentId);
         }
 
         public async Task UpdateNameAsync(string groupId, string newName)
         {
-            var group = await this.repository.AllAsNoTracking().Where(x => x.Id == groupId).FirstOrDefaultAsync();
+            var group = await this.repository
+                .AllAsNoTracking()
+                .Where(x => x.Id == groupId)
+                .FirstOrDefaultAsync();
+
             group.Name = newName;
             this.repository.Update(group);
+
             await this.repository.SaveChangesAsync();
         }
 
-        public async Task AssignEventsToGroupAsync(string groupId, IList<string> evenstIds)
+        public async Task AssignEventsToGroupAsync(string groupId, IList<string> eventsIds)
         {
-            foreach (var eventId in evenstIds)
+            foreach (var eventId in eventsIds)
             {
                 await this.eventsGroupsService.CreateEventGroupAsync(eventId, groupId);
             }
         }
 
         public async Task<IEnumerable<T>> GetAllByEventIdAsync<T>(string eventId)
-        => await this.repository
-            .AllAsNoTracking()
-            .Where(x => x.EventsGroups.Any(x => x.EventId == eventId))
-            .To<T>()
-            .ToListAsync();
+            => await this.repository
+                .AllAsNoTracking()
+                .Where(x => x.EventsGroups.Any(x => x.EventId == eventId))
+                .To<T>()
+                .ToListAsync();
 
         public async Task<IList<T>> GetAllPerPageAsync<T>(int page, int countPerPage, string creatorId = null)
         {
@@ -119,12 +139,14 @@
                 query = query.Where(x => x.CreatorId == creatorId);
             }
 
-            return await query
+            var result = await query
                    .OrderByDescending(x => x.CreatedOn)
                    .Skip(countPerPage * (page - 1))
                    .Take(countPerPage)
                    .To<T>()
                    .ToListAsync();
+
+            return result;
         }
 
         public int GetAllGroupsCount(string creatorId = null)
@@ -136,7 +158,9 @@
                 query = query.Where(x => x.CreatorId == creatorId);
             }
 
-            return query.Count();
+            var result = query.Count();
+
+            return result;
         }
     }
 }

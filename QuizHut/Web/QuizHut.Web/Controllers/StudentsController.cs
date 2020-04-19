@@ -41,6 +41,7 @@
         public IActionResult Index(string password, string errorText)
         {
             var model = new PasswordInputViewModel();
+
             if (errorText != null)
             {
                 model.Password = password;
@@ -54,26 +55,35 @@
         {
             var studentId = this.userManager.GetUserId(this.User);
             var allResultsCount = this.resultService.GetResultsCountByStudentId(studentId);
+
             int pagesCount = 0;
-            var model = new StudentResultsViewModel()
+
+            var model = new StudentResultsViewModel
             {
                 CurrentPage = page,
                 PagesCount = pagesCount,
             };
 
-            if (allResultsCount > 0)
+            if (allResultsCount <= 0)
             {
-                pagesCount = (int)Math.Ceiling(allResultsCount / (decimal)countPerPage);
-                var results = await this.resultService.GetPerPageByStudentIdAsync<StudentResultViewModel>(studentId, page, countPerPage);
-                var timeZoneIana = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
-                foreach (var result in results)
-                {
-                    result.Date = this.dateTimeConverter.GetDate(result.EventActivationDateAndTime, timeZoneIana);
-                }
-
-                model.PagesCount = pagesCount;
-                model.Results = results;
+                return this.View(model);
             }
+
+            pagesCount = (int)Math.Ceiling(allResultsCount / (decimal)countPerPage);
+
+            var results = await this.resultService
+                .GetPerPageByStudentIdAsync<StudentResultViewModel>(studentId, page, countPerPage);
+
+            var timeZone = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
+
+            foreach (var result in results)
+            {
+                result.Date = this.dateTimeConverter
+                    .GetDate(result.EventActivationDateAndTime, timeZone);
+            }
+
+            model.PagesCount = pagesCount;
+            model.Results = results;
 
             return this.View(model);
         }
@@ -81,29 +91,37 @@
         public async Task<IActionResult> StudentActiveEventsAll(int page = 1, int countPerPage = PerPageDefaultValue)
         {
             var studentId = this.userManager.GetUserId(this.User);
-            var allActiveEventsCount = this.eventsService.GetEventsCountByStudentIdAndStatus(studentId, Status.Active);
+            var allActiveEventsCount = this.eventsService
+                .GetEventsCountByStudentIdAndStatus(studentId, Status.Active);
+
             int pagesCount = 0;
-            var model = new StudentEventsViewModel<StudentActiveEventViewModel>()
+
+            var model = new StudentEventsViewModel<StudentActiveEventViewModel>
             {
                 CurrentPage = page,
                 PagesCount = pagesCount,
             };
 
-            if (allActiveEventsCount > 0)
+            if (allActiveEventsCount <= 0)
             {
-                pagesCount = (int)Math.Ceiling(allActiveEventsCount / (decimal)countPerPage);
-                var activeEvents = await this.eventsService
-               .GetPerPageByStudentIdFilteredByStatusAsync<StudentActiveEventViewModel>(Status.Active, studentId, page, countPerPage, false);
-
-                var timeZoneIana = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
-                foreach (var activeEvent in activeEvents)
-                {
-                    activeEvent.Duration = this.dateTimeConverter.GetDurationString(activeEvent.ActivationDateAndTime, activeEvent.DurationOfActivity, timeZoneIana);
-                }
-
-                model.PagesCount = pagesCount;
-                model.Events = activeEvents;
+                return this.View(model);
             }
+
+            pagesCount = (int)Math.Ceiling(allActiveEventsCount / (decimal)countPerPage);
+
+            var activeEvents = await this.eventsService
+                .GetPerPageByStudentIdFilteredByStatusAsync<StudentActiveEventViewModel>(Status.Active, studentId, page, countPerPage, false);
+
+            var timeZone = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
+
+            foreach (var activeEvent in activeEvents)
+            {
+                activeEvent.Duration = this.dateTimeConverter
+                    .GetDurationString(activeEvent.ActivationDateAndTime, activeEvent.DurationOfActivity, timeZone);
+            }
+
+            model.PagesCount = pagesCount;
+            model.Events = activeEvents;
 
             return this.View(model);
         }
@@ -111,9 +129,12 @@
         public async Task<IActionResult> StudentEndedEventsAll(int page = 1, int countPerPage = PerPageDefaultValue)
         {
             var studentId = this.userManager.GetUserId(this.User);
-            var allEndedEventsCount = this.eventsService.GetEventsCountByStudentIdAndStatus(studentId, Status.Ended);
+            var allEndedEventsCount = this.eventsService
+                .GetEventsCountByStudentIdAndStatus(studentId, Status.Ended);
+
             int pagesCount = 0;
-            var model = new StudentEventsViewModel<StudentEndedEventViewModel>()
+
+            var model = new StudentEventsViewModel<StudentEndedEventViewModel>
             {
                 CurrentPage = page,
                 PagesCount = pagesCount,
@@ -125,17 +146,17 @@
                 var endedEvents = await this.eventsService
                .GetPerPageByStudentIdFilteredByStatusAsync<StudentEndedEventViewModel>(Status.Ended, studentId, page, countPerPage, true);
                 var scores = await this.resultService.GetAllByStudentIdAsync<ScoreViewModel>(studentId);
-                var timeZoneIana = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
+                var timeZone = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
 
-                foreach (var endenEvent in endedEvents)
+                foreach (var endedEvent in endedEvents)
                 {
-                    if (endenEvent.QuizName == null)
+                    if (endedEvent.QuizName == null)
                     {
-                        endenEvent.QuizName = await this.resultService.GetQuizNameByEventIdAndStudentIdAsync(endenEvent.Id, studentId);
+                        endedEvent.QuizName = await this.resultService.GetQuizNameByEventIdAndStudentIdAsync(endedEvent.Id, studentId);
                     }
 
-                    endenEvent.Score = scores.FirstOrDefault(x => x.EventId == endenEvent.Id);
-                    endenEvent.Date = this.dateTimeConverter.GetDate(endenEvent.ActivationDateAndTime, timeZoneIana);
+                    endedEvent.Score = scores.FirstOrDefault(x => x.EventId == endedEvent.Id);
+                    endedEvent.Date = this.dateTimeConverter.GetDate(endedEvent.ActivationDateAndTime, timeZone);
                 }
 
                 model.PagesCount = pagesCount;
@@ -148,30 +169,39 @@
         public async Task<IActionResult> StudentPendingEventsAll(int page = 1, int countPerPage = PerPageDefaultValue)
         {
             var studentId = this.userManager.GetUserId(this.User);
-            var allPendingEventsCount = this.eventsService.GetEventsCountByStudentIdAndStatus(studentId, Status.Pending);
+            var allPendingEventsCount = this.eventsService
+                .GetEventsCountByStudentIdAndStatus(studentId, Status.Pending);
+
             int pagesCount = 0;
-            var model = new StudentEventsViewModel<StudentPendingEventViewModel>()
+
+            var model = new StudentEventsViewModel<StudentPendingEventViewModel>
             {
                 CurrentPage = page,
                 PagesCount = pagesCount,
             };
 
-            if (allPendingEventsCount > 0)
+            if (allPendingEventsCount <= 0)
             {
-                pagesCount = (int)Math.Ceiling(allPendingEventsCount / (decimal)countPerPage);
-                var pendingEvents = await this.eventsService
-               .GetPerPageByStudentIdFilteredByStatusAsync<StudentPendingEventViewModel>(Status.Pending, studentId, page, countPerPage, false);
-
-                var timeZoneIana = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
-                foreach (var pendingEvent in pendingEvents)
-                {
-                    pendingEvent.Duration = this.dateTimeConverter.GetDurationString(pendingEvent.ActivationDateAndTime, pendingEvent.DurationOfActivity, timeZoneIana);
-                    pendingEvent.Date = this.dateTimeConverter.GetDate(pendingEvent.ActivationDateAndTime, timeZoneIana);
-                }
-
-                model.PagesCount = pagesCount;
-                model.Events = pendingEvents;
+                return this.View(model);
             }
+
+            pagesCount = (int)Math.Ceiling(allPendingEventsCount / (decimal)countPerPage);
+
+            var pendingEvents = await this.eventsService
+                .GetPerPageByStudentIdFilteredByStatusAsync<StudentPendingEventViewModel>(Status.Pending, studentId, page, countPerPage, false);
+
+            var timeZone = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
+
+            foreach (var pendingEvent in pendingEvents)
+            {
+                pendingEvent.Duration = this.dateTimeConverter
+                    .GetDurationString(pendingEvent.ActivationDateAndTime, pendingEvent.DurationOfActivity, timeZone);
+
+                pendingEvent.Date = this.dateTimeConverter.GetDate(pendingEvent.ActivationDateAndTime, timeZone);
+            }
+
+            model.PagesCount = pagesCount;
+            model.Events = pendingEvents;
 
             return this.View(model);
         }

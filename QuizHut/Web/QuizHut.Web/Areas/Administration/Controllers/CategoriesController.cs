@@ -39,28 +39,35 @@
         public async Task<IActionResult> AllCategoriesCreatedByTeacher(int page = 1, int countPerPage = PerPageDefaultValue)
         {
             var userId = this.userManager.GetUserId(this.User);
-            var allCategoriesCreatedByTeacherCount = this.service.GetAllCategoriesCount(userId);
+            var allCategoriesCreatedByTeacherCount = this.service
+                .GetAllCategoriesCount(userId);
+
             int pagesCount = 0;
 
-            var model = new CategoriesListAllViewModel()
+            var model = new CategoriesListAllViewModel
             {
                 CurrentPage = page,
                 PagesCount = pagesCount,
             };
 
-            if (allCategoriesCreatedByTeacherCount > 0)
+            if (allCategoriesCreatedByTeacherCount <= 0)
             {
-                pagesCount = (int)Math.Ceiling(allCategoriesCreatedByTeacherCount / (decimal)countPerPage);
-                var categories = await this.service.GetAllPerPage<CategoryViewModel>(page, countPerPage, userId);
-                var timeZoneIana = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
-                foreach (var category in categories)
-                {
-                    category.CreatedOnDate = this.dateTimeConverter.GetDate(category.CreatedOn, timeZoneIana);
-                }
-
-                model.Categories = categories;
-                model.PagesCount = pagesCount;
+                return this.View(model);
             }
+
+            pagesCount = (int)Math.Ceiling(allCategoriesCreatedByTeacherCount / (decimal)countPerPage);
+            var categories = await this.service
+                .GetAllPerPage<CategoryViewModel>(page, countPerPage, userId);
+
+            var timeZone = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
+
+            foreach (var category in categories)
+            {
+                category.CreatedOnDate = this.dateTimeConverter.GetDate(category.CreatedOn, timeZone);
+            }
+
+            model.Categories = categories;
+            model.PagesCount = pagesCount;
 
             return this.View(model);
         }
@@ -81,7 +88,9 @@
         public async Task<IActionResult> Create(CreateCategoryInputViewModel model)
         {
             var userId = this.userManager.GetUserId(this.User);
-            var categoryId = await this.service.CreateCategoryAsync(model.Name, userId);
+
+            var categoryId = await this.service
+                .CreateCategoryAsync(model.Name, userId);
 
             return this.RedirectToAction("AssignQuizzesToCategory", new { id = categoryId });
         }
@@ -89,8 +98,13 @@
         public async Task<IActionResult> AssignQuizzesToCategory(string id)
         {
             var userId = this.userManager.GetUserId(this.User);
-            var quizzes = await this.quizService.GetUnAssignedToCategoryByCreatorIdAsync<QuizAssignViewModel>(id, userId);
-            var model = await this.service.GetByIdAsync<CategoryWithQuizzesViewModel>(id);
+
+            var quizzes = await this.quizService
+                .GetUnAssignedToCategoryByCreatorIdAsync<QuizAssignViewModel>(id, userId);
+
+            var model = await this.service
+                .GetByIdAsync<CategoryWithQuizzesViewModel>(id);
+
             model.Quizzes = quizzes;
 
             return this.View(model);
@@ -100,15 +114,20 @@
         [ModelStateValidationActionFilterAttribute]
         public async Task<IActionResult> AssignQuizzesToCategory(CategoryWithQuizzesViewModel model)
         {
-            var quizzesIds = model.Quizzes.Where(x => x.IsAssigned).Select(x => x.Id).ToList();
+            var quizzesIds = model.Quizzes
+                .Where(x => x.IsAssigned)
+                .Select(x => x.Id)
+                .ToList();
 
-            if (quizzesIds.Count() == 0)
+            if (!quizzesIds.Any())
             {
                 model.Error = true;
+
                 return this.View(model);
             }
 
             await this.service.AssignQuizzesToCategoryAsync(model.Id, quizzesIds);
+
             return this.RedirectToAction("CategoryDetails", new { id = model.Id });
         }
 
@@ -117,6 +136,7 @@
         {
             var quizzes = await this.quizService.GetAllByCategoryIdAsync<QuizAssignViewModel>(id);
             var model = await this.service.GetByIdAsync<CategoryWithQuizzesViewModel>(id);
+
             model.Quizzes = quizzes;
 
             return this.View(model);
@@ -126,12 +146,17 @@
         public async Task<IActionResult> Delete(string id)
         {
             await this.service.DeleteAsync(id);
+
             return this.RedirectToAction("AllCategoriesCreatedByTeacher");
         }
 
         public IActionResult EditName(string id, string name)
         {
-            var model = new EditCategoryNameInputViewModel() { Id = id, Name = name };
+            var model = new EditCategoryNameInputViewModel
+            {
+                Id = id,
+                Name = name,
+            };
 
             return this.View(model);
         }
@@ -149,6 +174,7 @@
         public async Task<IActionResult> DeleteQuizFromCategory(string categoryId, string quizId)
         {
             await this.service.DeleteQuizFromCategoryAsync(categoryId, quizId);
+
             return this.RedirectToAction("CategoryDetails", new { id = categoryId });
         }
     }

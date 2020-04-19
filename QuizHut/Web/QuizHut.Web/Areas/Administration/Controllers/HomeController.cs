@@ -10,6 +10,7 @@
         public IActionResult Index(string password, string errorText)
         {
             var model = new PasswordInputViewModel();
+
             if (errorText != null)
             {
                 model.Password = password;

@@ -53,28 +53,36 @@
         {
             var userId = this.userManager.GetUserId(this.User);
             var allEventsCreatedByTeacher = this.service.GetAllEventsCount(userId);
+
             int pagesCount = 0;
 
-            var model = new EventsListAllViewModel()
+            var model = new EventsListAllViewModel
             {
                 CurrentPage = page,
                 PagesCount = pagesCount,
             };
 
-            if (allEventsCreatedByTeacher > 0)
+            if (allEventsCreatedByTeacher <= 0)
             {
-                pagesCount = (int)Math.Ceiling(allEventsCreatedByTeacher / (decimal)countPerPage);
-                var events = await this.service.GetAllPerPage<EventListViewModel>(page, countPerPage, userId);
-                var timeZoneIana = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
-                foreach (var @event in events)
-                {
-                    @event.Duration = this.dateTimeConverter.GetDurationString(@event.ActivationDateAndTime, @event.DurationOfActivity, timeZoneIana);
-                    @event.StartDate = this.dateTimeConverter.GetDate(@event.ActivationDateAndTime, timeZoneIana);
-                }
-
-                model.Events = events;
-                model.PagesCount = pagesCount;
+                return this.View(model);
             }
+
+            pagesCount = (int)Math.Ceiling(allEventsCreatedByTeacher / (decimal)countPerPage);
+            var events = await this.service.GetAllPerPage<EventListViewModel>(page, countPerPage, userId);
+
+            var timeZone = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
+
+            foreach (var @event in events)
+            {
+                @event.Duration = this.dateTimeConverter
+                    .GetDurationString(@event.ActivationDateAndTime, @event.DurationOfActivity, timeZone);
+
+                @event.StartDate = this.dateTimeConverter
+                    .GetDate(@event.ActivationDateAndTime, timeZone);
+            }
+
+            model.Events = events;
+            model.PagesCount = pagesCount;
 
             return this.View(model);
         }
@@ -88,16 +96,23 @@
         [ModelStateValidationActionFilterAttribute]
         public async Task<IActionResult> EventInput(CreateEventInputViewModel model)
         {
-            var timeErrorMessage = this.service.GetTimeErrorMessage(model.ActiveFrom, model.ActiveTo, model.ActivationDate, model.TimeZone);
+            var timeErrorMessage = this.service
+                .GetTimeErrorMessage(model.ActiveFrom, model.ActiveTo, model.ActivationDate, model.TimeZone);
+
             if (timeErrorMessage != null)
             {
                 model.Error = timeErrorMessage;
+
                 return this.View(model);
             }
 
             var user = await this.userManager.GetUserAsync(this.User);
-            var eventId = await this.service.CreateEventAsync(model.Name, model.ActivationDate, model.ActiveFrom, model.ActiveTo, user.Id);
-            await this.hub.Clients.Group(GlobalConstants.AdministratorRoleName).SendAsync("NewEventUpdate", user.UserName, model.Name);
+
+            var eventId = await this.service
+                .CreateEventAsync(model.Name, model.ActivationDate, model.ActiveFrom, model.ActiveTo, user.Id);
+
+            await this.hub.Clients
+                .Group(GlobalConstants.AdministratorRoleName).SendAsync("NewEventUpdate", user.UserName, model.Name);
 
             return this.RedirectToAction("AssignGroupsToEvent", new { id = eventId });
         }
@@ -107,7 +122,9 @@
             var userId = this.userManager.GetUserId(this.User);
             var groups = await this.groupsService.GetAllAsync<GroupAssignViewModel>(userId);
             var model = await this.service.GetEventModelByIdAsync<EventWithGroupsViewModel>(id);
+
             model.Groups = groups;
+
             return this.View(model);
         }
 
@@ -120,10 +137,12 @@
             if (groupIds.Count == 0)
             {
                 model.Error = true;
+
                 return this.View(model);
             }
 
-            await this.groupsService.AssignEventsToGroupAsync(groupIds[0], new List<string>() { model.Id });
+            await this.groupsService.AssignEventsToGroupAsync(groupIds[0], new List<string> { model.Id });
+
             return this.RedirectToAction("AssignQuizToEvent", new { id = model.Id });
         }
 
@@ -133,7 +152,10 @@
             var userId = this.userManager.GetUserId(this.User);
 
             IList<GroupAssignViewModel> groups;
-            var isDashboardRequest = this.HttpContext.Session.GetString(GlobalConstants.DashboardRequest) != null;
+
+            var isDashboardRequest = this.HttpContext
+                .Session
+                .GetString(GlobalConstants.DashboardRequest) != null;
 
             if (isDashboardRequest)
             {
@@ -145,7 +167,9 @@
             }
 
             var model = await this.service.GetEventModelByIdAsync<EventWithGroupsViewModel>(id);
+
             model.Groups = groups;
+
             return this.View(model);
         }
 
@@ -153,15 +177,20 @@
         [ModelStateValidationActionFilterAttribute]
         public async Task<IActionResult> AddGroupsToEvent(EventWithGroupsViewModel model)
         {
-            var groupIds = model.Groups.Where(x => x.IsAssigned).Select(x => x.Id).ToList();
+            var groupIds = model.Groups
+                .Where(x => x.IsAssigned)
+                .Select(x => x.Id)
+                .ToList();
 
             if (groupIds.Count == 0)
             {
                 model.Error = true;
+
                 return this.View(model);
             }
 
             await this.service.AssignGroupsToEventAsync(groupIds, model.Id);
+
             return this.RedirectToAction("EventDetails", new { id = model.Id });
         }
 
@@ -170,8 +199,13 @@
         public async Task<IActionResult> AssignQuizToEvent(string id)
         {
             var userId = this.userManager.GetUserId(this.User);
+
             IList<QuizAssignViewModel> quizzes;
-            var isDashboardRequest = this.HttpContext.Session.GetString(GlobalConstants.DashboardRequest) != null;
+
+            var isDashboardRequest = this.HttpContext
+                .Session
+                .GetString(GlobalConstants.DashboardRequest) != null;
+
             if (isDashboardRequest)
             {
                 quizzes = await this.quizService.GetAllUnAssignedToEventAsync<QuizAssignViewModel>();
@@ -182,6 +216,7 @@
             }
 
             var model = await this.service.GetEventModelByIdAsync<EventWithQuizzesViewModel>(id);
+
             model.Quizzes = quizzes;
 
             return this.View(model);
@@ -191,15 +226,19 @@
         [ModelStateValidationActionFilterAttribute]
         public async Task<IActionResult> AssignQuizToEvent(EventWithQuizzesViewModel model)
         {
-            var quizzes = model.Quizzes.Where(x => x.IsAssigned).ToList();
+            var quizzes = model.Quizzes
+                .Where(x => x.IsAssigned)
+                .ToList();
 
-            if (quizzes.Count() != 1)
+            if (quizzes.Count != 1)
             {
                 model.Error = true;
+
                 return this.View(model);
             }
 
-            await this.service.AssigQuizToEventAsync(model.Id, quizzes[0].Id, model.TimeZone);
+            await this.service.AssignQuizToEventAsync(model.Id, quizzes[0].Id, model.TimeZone);
+
             return this.RedirectToAction("EventDetails", new { id = model.Id });
         }
 
@@ -209,9 +248,14 @@
         {
             var groups = await this.groupsService.GetAllByEventIdAsync<GroupAssignViewModel>(id);
             var model = await this.service.GetEventModelByIdAsync<EventDetailsViewModel>(id);
-            var timeZoneIana = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
-            var duration = this.dateTimeConverter.GetDurationString(model.ActivationDateAndTime, model.DurationOfActivity, timeZoneIana).Split(" - ");
-            model.ActivationDate = this.dateTimeConverter.GetDate(model.ActivationDateAndTime, timeZoneIana);
+
+            var timeZone = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
+
+            var duration = this.dateTimeConverter
+                .GetDurationString(model.ActivationDateAndTime, model.DurationOfActivity, timeZone).Split(" - ");
+
+            model.ActivationDate = this.dateTimeConverter.GetDate(model.ActivationDateAndTime, timeZone);
+
             model.ActiveFrom = duration[0];
             model.ActiveTo = duration[1];
             model.Groups = groups;
@@ -228,6 +272,7 @@
         public async Task<IActionResult> Delete(string id)
         {
             await this.service.DeleteAsync(id);
+
             return this.RedirectToAction("AllEventsCreatedByTeacher");
         }
 
@@ -235,6 +280,7 @@
         public async Task<IActionResult> DeleteQuizFromEvent(string eventId, string quizId)
         {
             await this.service.DeleteQuizFromEventAsync(eventId, quizId);
+
             return this.RedirectToAction("EventDetails", new { id = eventId });
         }
 
@@ -242,28 +288,37 @@
         public async Task<IActionResult> DeleteGroupFromEvent(string groupId, string eventId)
         {
             await this.groupsService.DeleteEventFromGroupAsync(groupId, eventId);
+
             return this.RedirectToAction("EventDetails", new { id = eventId });
         }
 
         public async Task<IActionResult> ActiveEventsAll(int page = 1, int countPerPage = PerPageDefaultValue)
         {
             var userId = this.userManager.GetUserId(this.User);
-            var allActiveEventsCreatedByTeacher = this.service.GetEventsCountByCreatorIdAndStatus(Status.Active, userId);
+
+            var allActiveEventsCreatedByTeacher = this.service
+                .GetEventsCountByCreatorIdAndStatus(Status.Active, userId);
+
             int pagesCount = 0;
 
-            var model = new EventsListAllViewModel()
+            var model = new EventsListAllViewModel
             {
                 CurrentPage = page,
                 PagesCount = pagesCount,
             };
 
-            if (allActiveEventsCreatedByTeacher > 0)
+            if (allActiveEventsCreatedByTeacher <= 0)
             {
-                pagesCount = (int)Math.Ceiling(allActiveEventsCreatedByTeacher / (decimal)countPerPage);
-                var events = await this.service.GetAllPerPageByCreatorIdAndStatus<EventListViewModel>(page, countPerPage, Status.Active, userId);
-                model.Events = events;
-                model.PagesCount = pagesCount;
+                return this.View(model);
             }
+
+            pagesCount = (int)Math.Ceiling(allActiveEventsCreatedByTeacher / (decimal)countPerPage);
+
+            var events = await this.service
+                .GetAllPerPageByCreatorIdAndStatus<EventListViewModel>(page, countPerPage, Status.Active, userId);
+
+            model.Events = events;
+            model.PagesCount = pagesCount;
 
             return this.View(model);
         }
@@ -271,7 +326,9 @@
         public async Task<IActionResult> EndedEventsAll(int page = 1, int countPerPage = PerPageDefaultValue)
         {
             var userId = this.userManager.GetUserId(this.User);
-            var allEndedEventsCreatedByTeacher = this.service.GetEventsCountByCreatorIdAndStatus(Status.Ended, userId);
+            var allEndedEventsCreatedByTeacher = this.service
+                .GetEventsCountByCreatorIdAndStatus(Status.Ended, userId);
+
             int pagesCount = 0;
 
             var model = new EventsListAllViewModel()
@@ -280,13 +337,18 @@
                 PagesCount = pagesCount,
             };
 
-            if (allEndedEventsCreatedByTeacher > 0)
+            if (allEndedEventsCreatedByTeacher <= 0)
             {
-                pagesCount = (int)Math.Ceiling(allEndedEventsCreatedByTeacher / (decimal)countPerPage);
-                var events = await this.service.GetAllPerPageByCreatorIdAndStatus<EventListViewModel>(page, countPerPage, Status.Ended, userId);
-                model.Events = events;
-                model.PagesCount = pagesCount;
+                return this.View(model);
             }
+
+            pagesCount = (int)Math.Ceiling(allEndedEventsCreatedByTeacher / (decimal)countPerPage);
+
+            var events = await this.service
+                .GetAllPerPageByCreatorIdAndStatus<EventListViewModel>(page, countPerPage, Status.Ended, userId);
+
+            model.Events = events;
+            model.PagesCount = pagesCount;
 
             return this.View(model);
         }
@@ -304,14 +366,18 @@
         [ModelStateValidationActionFilterAttribute]
         public async Task<IActionResult> EditEventDetails(EditEventDetailsInputViewModel model)
         {
-            var timeErrorMessage = this.service.GetTimeErrorMessage(model.ActiveFrom, model.ActiveTo, model.ActivationDate, model.TimeZone);
+            var timeErrorMessage = this.service
+                .GetTimeErrorMessage(model.ActiveFrom, model.ActiveTo, model.ActivationDate, model.TimeZone);
+
             if (timeErrorMessage != null)
             {
                 model.Error = timeErrorMessage;
+
                 return this.View(model);
             }
 
-            await this.service.UpdateAsync(model.Id, model.Name, model.ActivationDate, model.ActiveFrom, model.ActiveTo, model.TimeZone);
+            await this.service
+                .UpdateAsync(model.Id, model.Name, model.ActivationDate, model.ActiveFrom, model.ActiveTo, model.TimeZone);
 
             return this.RedirectToAction("EventDetails", new { id = model.Id });
         }
@@ -320,8 +386,16 @@
         {
             string path = "./wwwroot/html/email.html";
             string emailHtmlContent = System.IO.File.ReadAllText(path);
+
             await this.service.SendEmailsToEventGroups(id, emailHtmlContent);
-            return this.RedirectToAction("EventDetails", new { id, messagesAreSend = GlobalConstants.ErrorMessages.MessagesAreSend });
+
+            var routeValues = new
+            {
+                id,
+                messagesAreSend = GlobalConstants.ErrorMessages.MessagesAreSend,
+            };
+
+            return this.RedirectToAction("EventDetails", routeValues);
         }
     }
 }

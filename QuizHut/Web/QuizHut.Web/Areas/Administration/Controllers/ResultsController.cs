@@ -14,7 +14,9 @@
         private readonly UserManager<ApplicationUser> userManager;
         private readonly IEventsService eventService;
 
-        public ResultsController(UserManager<ApplicationUser> userManager, IEventsService eventService)
+        public ResultsController(
+            UserManager<ApplicationUser> userManager,
+            IEventsService eventService)
         {
             this.userManager = userManager;
             this.eventService = eventService;
@@ -29,7 +31,8 @@
         [SetDashboardRequestToTrueInViewDataActionFilterAttribute]
         public async Task<IActionResult> EventResultsDetails(string id)
         {
-            var eventModel = await this.eventService.GetEventModelByIdAsync<EventWithGroupAndQuizNamesViewModel>(id);
+            var eventModel = await this.eventService
+                .GetEventModelByIdAsync<EventWithGroupAndQuizNamesViewModel>(id);
 
             return this.View(eventModel);
         }

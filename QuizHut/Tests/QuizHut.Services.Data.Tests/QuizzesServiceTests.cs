@@ -253,7 +253,7 @@
         {
             var creatorId = Guid.NewGuid().ToString();
             var quizId = await this.CreateQuizAsync("Test Quiz", creatorId);
-            var result = await this.Service.HasUserPermition(creatorId, quizId);
+            var result = await this.Service.HasUserPermission(creatorId, quizId);
 
             Assert.True(result);
         }
@@ -266,7 +266,7 @@
             var eventId = await this.CreateEventAsync(Status.Pending);
             await this.AssignEventToQuizAsync(quizId, eventId);
 
-            var result = await this.Service.HasUserPermition(Guid.NewGuid().ToString(), quizId);
+            var result = await this.Service.HasUserPermission(Guid.NewGuid().ToString(), quizId);
 
             Assert.False(result);
         }
@@ -280,7 +280,7 @@
             await this.AssignEventToQuizAsync(quizId, eventId);
             await this.CreateResultAsync(studentId, eventId);
 
-            var result = await this.Service.HasUserPermition(studentId, quizId);
+            var result = await this.Service.HasUserPermission(studentId, quizId);
 
             Assert.False(result);
         }
@@ -293,7 +293,7 @@
             var eventId = await this.CreateEventAsync(Status.Active);
             await this.AssignEventToQuizAsync(quizId, eventId);
 
-            var result = await this.Service.HasUserPermition(studentId, quizId);
+            var result = await this.Service.HasUserPermission(studentId, quizId);
 
             Assert.False(result);
         }
@@ -307,7 +307,7 @@
             await this.AssignEventToQuizAsync(quizId, eventId);
             await this.CreateGroupAndAssignStudentAndEventAsync(studentId, eventId);
 
-            var result = await this.Service.HasUserPermition(studentId, quizId);
+            var result = await this.Service.HasUserPermission(studentId, quizId);
 
             Assert.True(result);
         }

@@ -48,11 +48,15 @@
 
             var user = await this.userManager.GetUserAsync(this.User);
             var roles = await this.userManager.GetRolesAsync(user);
-            var userHasPermitionToTakeTheQuiz = await this.quizService.HasUserPermition(user.Id, id);
 
-            if (!userHasPermitionToTakeTheQuiz)
+            var hasUserPermission = await this.quizService.HasUserPermission(user.Id, id);
+
+            if (!hasUserPermission)
             {
-                var controller = roles.Count > 0 ? "Home" : "Students";
+                var controller = roles.Count > 0
+                    ? "Home"
+                    : "Students";
+
                 var routObject = new
                 {
                     password,
@@ -64,7 +68,9 @@
             }
 
             this.ViewData["Area"] = roles.Count > 0 ? Constants.AdminArea : string.Empty;
+
             var quizModel = await this.quizService.GetQuizByIdAsync<AttemtedQuizViewModel>(id);
+
             foreach (var question in quizModel.Questions)
             {
                 question.Answers = this.shuffler.Shuffle<AttemtedQuizAnswerViewModel>(question.Answers);
@@ -78,20 +84,25 @@
         {
             var id = await this.quizService.GetQuizIdByPasswordAsync(model.Password);
 
-            if (model.Password == null || id == null)
+            if (model.Password != null && id != null)
             {
-                var routObject = new
+                var routeValues = new
                 {
                     password = model.Password,
-                    area = string.Empty,
-                    errorText = model.Password == null ? GlobalConstants.ErrorMessages.EmptyPasswordField
-                        : id == null ? string.Format(GlobalConstants.ErrorMessages.QuizNotFound, model.Password) : null,
                 };
 
-                return this.RedirectToAction("Index", "Students", routObject);
+                return this.RedirectToAction("Start", routeValues);
             }
 
-            return this.RedirectToAction("Start", new { password = model.Password });
+            var routObject = new
+            {
+                password = model.Password,
+                area = string.Empty,
+                errorText = model.Password == null ? GlobalConstants.ErrorMessages.EmptyPasswordField
+                    : id == null ? string.Format(GlobalConstants.ErrorMessages.QuizNotFound, model.Password) : null,
+            };
+
+            return this.RedirectToAction("Index", "Students", routObject);
         }
 
         [HttpGet]
@@ -107,12 +118,13 @@
             var originalQuestions = await this.questionsService.GetAllByQuizIdAsync<QuestionViewModel>(model.Id);
             var points = this.resultHelper.CalculateResult(originalQuestions, model.Questions);
             var creatorId = await this.quizService.GetCreatorIdByQuizIdAsync(model.Id);
+
             if (creatorId != userId)
             {
                 await this.resultService.CreateResultAsync(userId, points, originalQuestions.Count, model.Id);
             }
 
-            var resultModel = new QuizResultViewModel()
+            var resultModel = new QuizResultViewModel
             {
                 QuizName = model.Name,
                 MaxPoints = originalQuestions.Count,

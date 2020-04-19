@@ -16,7 +16,9 @@
         private readonly UserManager<ApplicationUser> userManager;
         private readonly IUsersService service;
 
-        public StudentsController(UserManager<ApplicationUser> userManager, IUsersService service)
+        public StudentsController(
+            UserManager<ApplicationUser> userManager,
+            IUsersService service)
         {
             this.userManager = userManager;
             this.service = service;

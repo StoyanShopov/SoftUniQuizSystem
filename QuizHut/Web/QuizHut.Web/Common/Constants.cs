@@ -2,7 +2,7 @@
 {
     public static class Constants
     {
-        public const string QuizSeesionId = "newQuizId";
+        public const string QuizSessionId = "newQuizId";
 
         public const string CurrentQuestionId = "currentQuestionId";
 

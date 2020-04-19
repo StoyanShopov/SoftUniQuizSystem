@@ -52,7 +52,13 @@
         {
             if (invalidEmail != null)
             {
-                return this.View(new InvalidUserEmailViewModel() { Email = invalidEmail, RoleName = roleName });
+                var model = new InvalidUserEmailViewModel
+                {
+                    Email = invalidEmail,
+                    RoleName = roleName,
+                };
+
+                return this.View(model);
             }
 
             return this.View();
@@ -63,17 +69,30 @@
         {
             if (!this.ModelState.IsValid)
             {
-                return this.RedirectToAction("Index", new { invalidEmail = GlobalConstants.Empty, roleName = model.RoleName });
+                var routeValues = new
+                {
+                    invalidEmail = GlobalConstants.Empty,
+                    roleName = model.RoleName,
+                };
+
+                return this.RedirectToAction("Index", routeValues);
             }
 
             var user = await this.userManager.FindByEmailAsync(model.NewUser.Email);
 
             if (user == null)
             {
-                return this.RedirectToAction("Index", new { invalidEmail = model.NewUser.Email, roleName = model.RoleName });
+                var routeValues = new
+                {
+                    invalidEmail = model.NewUser.Email,
+                    roleName = model.RoleName,
+                };
+
+                return this.RedirectToAction("Index", routeValues);
             }
 
             await this.userManager.AddToRoleAsync(user, model.RoleName);
+
             return this.RedirectToAction("Index");
         }
 
@@ -81,6 +100,7 @@
         {
             var user = await this.userManager.FindByIdAsync(id);
             await this.userManager.RemoveFromRoleAsync(user, roleName);
+
             return this.RedirectToAction("Index");
         }
 
@@ -88,20 +108,27 @@
         public async Task<IActionResult> ResultsAll(int page = 1, int countPerPage = PerPageDefaultValue)
         {
             var allEventsCount = this.eventService.GetAllEventsCount();
+
             int pagesCount = 0;
-            var model = new EventsListAllViewModel()
+
+            var model = new EventsListAllViewModel
             {
                 CurrentPage = page,
                 PagesCount = pagesCount,
             };
 
-            if (allEventsCount > 0)
+            if (allEventsCount <= 0)
             {
-                pagesCount = (int)Math.Ceiling(allEventsCount / (decimal)countPerPage);
-                var events = await this.eventService.GetAllPerPage<EventListViewModel>(page, countPerPage);
-                model.PagesCount = pagesCount;
-                model.Events = events;
+                return this.View(model);
             }
+
+            pagesCount = (int)Math.Ceiling(allEventsCount / (decimal)countPerPage);
+
+            var events = await this.eventService
+                .GetAllPerPage<EventListViewModel>(page, countPerPage);
+
+            model.PagesCount = pagesCount;
+            model.Events = events;
 
             return this.View(model);
         }
@@ -110,27 +137,36 @@
         public async Task<IActionResult> EventsAll(int page = 1, int countPerPage = PerPageDefaultValue)
         {
             var allEventsCount = this.eventService.GetAllEventsCount();
+
             int pagesCount = 0;
-            var model = new EventsListAllViewModel()
+
+            var model = new EventsListAllViewModel
             {
                 CurrentPage = page,
                 PagesCount = pagesCount,
             };
 
-            if (allEventsCount > 0)
+            if (allEventsCount <= 0)
             {
-                pagesCount = (int)Math.Ceiling(allEventsCount / (decimal)countPerPage);
-                var events = await this.eventService.GetAllPerPage<EventListViewModel>(page, countPerPage);
-                var timeZoneIana = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
-                foreach (var @event in events)
-                {
-                    @event.Duration = this.dateTimeConverter.GetDurationString(@event.ActivationDateAndTime, @event.DurationOfActivity, timeZoneIana);
-                    @event.StartDate = this.dateTimeConverter.GetDate(@event.ActivationDateAndTime, timeZoneIana);
-                }
-
-                model.PagesCount = pagesCount;
-                model.Events = events;
+                return this.View(model);
             }
+
+            pagesCount = (int)Math.Ceiling(allEventsCount / (decimal)countPerPage);
+            var events = await this.eventService.GetAllPerPage<EventListViewModel>(page, countPerPage);
+
+            var timeZone = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
+
+            foreach (var @event in events)
+            {
+                @event.Duration = this.dateTimeConverter
+                    .GetDurationString(@event.ActivationDateAndTime, @event.DurationOfActivity, timeZone);
+
+                @event.StartDate = this.dateTimeConverter
+                    .GetDate(@event.ActivationDateAndTime, timeZone);
+            }
+
+            model.PagesCount = pagesCount;
+            model.Events = events;
 
             return this.View(model);
         }
@@ -139,26 +175,32 @@
         public async Task<IActionResult> GroupsAll(int page = 1, int countPerPage = PerPageDefaultValue)
         {
             var allGroupsCount = this.groupsService.GetAllGroupsCount();
+
             int pagesCount = 0;
-            var model = new GroupsListAllViewModel()
+
+            var model = new GroupsListAllViewModel
             {
                 CurrentPage = page,
                 PagesCount = pagesCount,
             };
 
-            if (allGroupsCount > 0)
+            if (allGroupsCount <= 0)
             {
-                pagesCount = (int)Math.Ceiling(allGroupsCount / (decimal)countPerPage);
-                var groups = await this.groupsService.GetAllPerPageAsync<GroupListViewModel>(page, countPerPage);
-                var timeZoneIana = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
-                foreach (var group in groups)
-                {
-                    group.CreatedOnDate = this.dateTimeConverter.GetDate(group.CreatedOn, timeZoneIana);
-                }
-
-                model.Groups = groups;
-                model.PagesCount = pagesCount;
+                return this.View(model);
             }
+
+            pagesCount = (int)Math.Ceiling(allGroupsCount / (decimal)countPerPage);
+            var groups = await this.groupsService.GetAllPerPageAsync<GroupListViewModel>(page, countPerPage);
+
+            var timeZone = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
+
+            foreach (var group in groups)
+            {
+                @group.CreatedOnDate = this.dateTimeConverter.GetDate(@group.CreatedOn, timeZone);
+            }
+
+            model.Groups = groups;
+            model.PagesCount = pagesCount;
 
             return this.View(model);
         }
@@ -167,26 +209,32 @@
         public async Task<IActionResult> QuizzesAll(int page = 1, int countPerPage = PerPageDefaultValue)
         {
             var allQuizzesCount = this.quizzesService.GetAllQuizzesCount();
+
             int pagesCount = 0;
-            var model = new QuizzesAllListingViewModel()
+
+            var model = new QuizzesAllListingViewModel
             {
                 CurrentPage = page,
                 PagesCount = pagesCount,
             };
 
-            if (allQuizzesCount > 0)
+            if (allQuizzesCount <= 0)
             {
-                pagesCount = (int)Math.Ceiling(allQuizzesCount / (decimal)countPerPage);
-                var quizzes = await this.quizzesService.GetAllPerPageAsync<QuizListViewModel>(page, countPerPage);
-                var timeZoneIana = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
-                foreach (var quiz in quizzes)
-                {
-                    quiz.CreatedOnDate = this.dateTimeConverter.GetDate(quiz.CreatedOn, timeZoneIana);
-                }
-
-                model.PagesCount = pagesCount;
-                model.Quizzes = quizzes;
+                return this.View(model);
             }
+
+            pagesCount = (int)Math.Ceiling(allQuizzesCount / (decimal)countPerPage);
+            var quizzes = await this.quizzesService.GetAllPerPageAsync<QuizListViewModel>(page, countPerPage);
+
+            var timeZone = this.Request.Cookies[GlobalConstants.Coockies.TimeZoneIana];
+
+            foreach (var quiz in quizzes)
+            {
+                quiz.CreatedOnDate = this.dateTimeConverter.GetDate(quiz.CreatedOn, timeZone);
+            }
+
+            model.PagesCount = pagesCount;
+            model.Quizzes = quizzes;
 
             return this.View(model);
         }
@@ -195,20 +243,25 @@
         public async Task<IActionResult> StudentsAll(int page = 1, int countPerPage = PerPageDefaultValue)
         {
             var allStudentsCount = this.userService.GetAllStudentsCount();
+
             int pagesCount = 0;
-            var model = new StudentsAllViewModel()
+
+            var model = new StudentsAllViewModel
             {
                 CurrentPage = page,
                 PagesCount = pagesCount,
             };
 
-            if (allStudentsCount > 0)
+            if (allStudentsCount <= 0)
             {
-                pagesCount = (int)Math.Ceiling(allStudentsCount / (decimal)countPerPage);
-                var students = await this.userService.GetAllStudentsPerPageAsync<StudentViewModel>(page, countPerPage);
-                model.Students = students;
-                model.PagesCount = pagesCount;
+                return this.View(model);
             }
+
+            pagesCount = (int)Math.Ceiling(allStudentsCount / (decimal)countPerPage);
+            var students = await this.userService.GetAllStudentsPerPageAsync<StudentViewModel>(page, countPerPage);
+
+            model.Students = students;
+            model.PagesCount = pagesCount;
 
             return this.View(model);
         }

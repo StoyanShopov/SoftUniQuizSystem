@@ -30,17 +30,24 @@
         [ModelStateValidationActionFilterAttribute]
         public async Task<IActionResult> AddNewAnswer(AnswerViewModel model)
         {
-            var currentQuestionId = this.HttpContext.Session.GetString(Constants.CurrentQuestionId);
-            await this.answerService.CreateAnswerAsync(model.SanitizedContent, model.IsRightAnswer, currentQuestionId);
+            var currentQuestionId = this.HttpContext
+                .Session
+                .GetString(Constants.CurrentQuestionId);
+
+            await this.answerService
+                .CreateAnswerAsync(model.SanitizedContent, model.IsRightAnswer, currentQuestionId);
 
             return this.RedirectToAction("AnswerInput");
         }
 
         [HttpGet]
         [SetDashboardRequestToTrueInViewDataActionFilterAttribute]
-        public IActionResult ApendAnswerInput(string id)
+        public IActionResult AppendAnswerInput(string id)
         {
-            var model = new AnswerViewModel() { QuestionId = id };
+            var model = new AnswerViewModel
+            {
+                QuestionId = id,
+            };
 
             return this.View(model);
         }
@@ -49,8 +56,12 @@
         [ModelStateValidationActionFilterAttribute]
         public async Task<IActionResult> AppendNewAnswer(AnswerViewModel model)
         {
-            await this.answerService.CreateAnswerAsync(model.SanitizedContent, model.IsRightAnswer, model.QuestionId);
-            var page = this.HttpContext.Session.GetInt32(GlobalConstants.PageToReturnTo);
+            await this.answerService
+                .CreateAnswerAsync(model.SanitizedContent, model.IsRightAnswer, model.QuestionId);
+
+            var page = this.HttpContext
+                .Session
+                .GetInt32(GlobalConstants.PageToReturnTo);
 
             return this.RedirectToAction("Display", "Quizzes", new { page });
         }
@@ -59,7 +70,8 @@
         [SetDashboardRequestToTrueInViewDataActionFilterAttribute]
         public async Task<IActionResult> EditAnswerInput(string id)
         {
-            var model = await this.answerService.GetByIdAsync<AnswerViewModel>(id);
+            var model = await this.answerService
+                .GetByIdAsync<AnswerViewModel>(id);
 
             return this.View(model);
         }
@@ -68,8 +80,13 @@
         [ModelStateValidationActionFilterAttribute]
         public async Task<IActionResult> Update(AnswerViewModel model)
         {
-            await this.answerService.UpdateAsync(model.Id, model.SanitizedContent, model.IsRightAnswer);
-            var page = this.HttpContext.Session.GetInt32(GlobalConstants.PageToReturnTo);
+            await this.answerService
+                .UpdateAsync(model.Id, model.SanitizedContent, model.IsRightAnswer);
+
+            var page = this.HttpContext
+                .Session
+                .GetInt32(GlobalConstants.PageToReturnTo);
+
             return this.RedirectToAction("Display", "Quizzes", new { page });
         }
 
@@ -77,7 +94,11 @@
         public async Task<IActionResult> Delete(string id)
         {
             await this.answerService.DeleteAsync(id);
-            var page = this.HttpContext.Session.GetInt32(GlobalConstants.PageToReturnTo);
+
+            var page = this.HttpContext
+                .Session
+                .GetInt32(GlobalConstants.PageToReturnTo);
+
             return this.RedirectToAction("Display", "Quizzes", new { page });
         }
     }

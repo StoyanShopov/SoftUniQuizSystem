@@ -62,7 +62,7 @@
             model.CreatorId = user.Id;
             model.PasswordIsValid = true;
             var quizId = await this.quizService.CreateQuizAsync(model.Name, model.Description, model.Timer, model.CreatorId, model.Password);
-            this.HttpContext.Session.SetString(Constants.QuizSeesionId, quizId);
+            this.HttpContext.Session.SetString(Constants.QuizSessionId, quizId);
             await this.hub.Clients.Group(GlobalConstants.AdministratorRoleName).SendAsync("NewQuizUpdate", user.UserName, model.Name);
             return this.RedirectToAction("QuestionInput", "Questions");
         }
@@ -73,10 +73,10 @@
         {
             if (string.IsNullOrEmpty(id) || string.IsNullOrWhiteSpace(id))
             {
-                id = this.HttpContext.Session.GetString(Constants.QuizSeesionId);
+                id = this.HttpContext.Session.GetString(Constants.QuizSessionId);
             }
 
-            this.HttpContext.Session.SetString(Constants.QuizSeesionId, id);
+            this.HttpContext.Session.SetString(Constants.QuizSessionId, id);
 
             if (page == null)
             {

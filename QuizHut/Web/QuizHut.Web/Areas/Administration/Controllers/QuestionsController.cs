@@ -16,7 +16,9 @@
         private readonly IQuestionsService questionService;
         private readonly IWebHostEnvironment env;
 
-        public QuestionsController(IQuestionsService questionService, IWebHostEnvironment env)
+        public QuestionsController(
+            IQuestionsService questionService, 
+            IWebHostEnvironment env)
         {
             this.questionService = questionService;
             this.env = env;
@@ -28,7 +30,7 @@
         {
             if (id != null)
             {
-                this.HttpContext.Session.SetString(Constants.QuizSeesionId, id);
+                this.HttpContext.Session.SetString(Constants.QuizSessionId, id);
             }
 
             return this.View();
@@ -38,7 +40,7 @@
         [ModelStateValidationActionFilterAttribute]
         public async Task<IActionResult> AddNewQuestion(QuestionInputModel model)
         {
-            var quizId = this.HttpContext.Session.GetString(Constants.QuizSeesionId);
+            var quizId = this.HttpContext.Session.GetString(Constants.QuizSessionId);
             var questionId = await this.questionService.CreateQuestionAsync(quizId, model.Text);
             this.HttpContext.Session.SetString(Constants.CurrentQuestionId, questionId);
             return this.RedirectToAction("AnswerInput", "Answers");
