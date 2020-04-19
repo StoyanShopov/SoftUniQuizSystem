@@ -31,11 +31,14 @@
 
         public async Task<string> CreateQuestionAsync(string quizId, string questionText)
         {
-            var quiz = await this.quizRepository.AllAsNoTracking().Select(x => new
-            {
-                x.Id,
-                Questions = x.Questions.Count,
-            }).FirstOrDefaultAsync(x => x.Id == quizId);
+            var quiz = await this.quizRepository
+                .AllAsNoTracking()
+                .Select(x => new
+                {
+                    x.Id,
+                    Questions = x.Questions.Count,
+                })
+                .FirstOrDefaultAsync(x => x.Id == quizId);
 
             var question = new Question
             {
@@ -52,7 +55,8 @@
 
         public async Task<string> ImportQuestionsAsync(string quizId, IFormFile formFile)
         {
-            var quiz = await this.quizRepository.All()
+            var quiz = await this.quizRepository
+                .All()
                 .FirstOrDefaultAsync(q => q.Id == quizId);
 
             await using (var stream = new MemoryStream())
@@ -107,9 +111,14 @@
 
         public async Task DeleteQuestionByIdAsync(string id)
         {
-            var question = await this.questionRepository.AllAsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            var question = await this.questionRepository
+                .AllAsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id);
+
             this.questionRepository.Delete(question);
+
             await this.questionRepository.SaveChangesAsync();
+
             await this.UpdateAllQuestionsInQuizNumeration(question.QuizId);
         }
 
@@ -133,32 +142,42 @@
 
         public async Task Update(string id, string text)
         {
-            var question = await this.questionRepository.AllAsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            var question = await this.questionRepository
+                .AllAsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id);
+
             question.Text = text;
+
             this.questionRepository.Update(question);
+
             await this.questionRepository.SaveChangesAsync();
         }
 
         public async Task<T> GetByIdAsync<T>(string id)
-        => await this.questionRepository.AllAsNoTracking()
-            .Where(x => x.Id == id)
-            .To<T>()
-            .FirstOrDefaultAsync();
+            => await this.questionRepository
+                .AllAsNoTracking()
+                .Where(x => x.Id == id)
+                .To<T>()
+                .FirstOrDefaultAsync();
 
         public async Task<IList<T>> GetAllByQuizIdAsync<T>(string id)
-        => await this.questionRepository.AllAsNoTracking()
-            .Where(x => x.QuizId == id)
-            .OrderBy(x => x.Number)
-            .To<T>()
-            .ToListAsync();
+            => await this.questionRepository
+                .AllAsNoTracking()
+                .Where(x => x.QuizId == id)
+                .OrderBy(x => x.Number)
+                .To<T>()
+                .ToListAsync();
 
         public int GetAllByQuizIdCount(string id)
-        => this.questionRepository.AllAsNoTracking().Count(x => x.QuizId == id);
+            => this.questionRepository
+                .AllAsNoTracking()
+                .Count(x => x.QuizId == id);
 
         public async Task<T> GetQuestionByQuizIdAndNumberAsync<T>(string quizId, int number)
-        => await this.questionRepository.AllAsNoTracking()
-            .Where(x => x.QuizId == quizId && x.Number == number)
-            .To<T>()
-            .FirstOrDefaultAsync();
+            => await this.questionRepository
+                .AllAsNoTracking()
+                .Where(x => x.QuizId == quizId && x.Number == number)
+                .To<T>()
+                .FirstOrDefaultAsync();
     }
 }

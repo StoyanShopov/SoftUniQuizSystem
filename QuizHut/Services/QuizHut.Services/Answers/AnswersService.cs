@@ -47,6 +47,7 @@
             answer.IsRightAnswer = isRightAnswer;
 
             this.repository.Update(answer);
+
             await this.repository.SaveChangesAsync();
         }
 

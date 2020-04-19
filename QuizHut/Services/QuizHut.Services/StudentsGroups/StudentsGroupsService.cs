@@ -18,12 +18,15 @@
 
         public async Task CreateStudentGroupAsync(string groupId, string studentId)
         {
-            var studentGroup = new StudentGroup() { GroupId = groupId, StudentId = studentId };
-            var studentExists = await this.repository
+            var studentGroup = new StudentGroup
+            {
+                GroupId = groupId,
+                StudentId = studentId,
+            };
+
+            var studentExists = this.repository
                 .AllAsNoTracking()
-                .Where(x => x.GroupId == groupId && x.StudentId == studentId)
-                .FirstOrDefaultAsync()
-                != null;
+                .Any(x => x.GroupId == groupId && x.StudentId == studentId);
 
             if (!studentExists)
             {
@@ -40,6 +43,7 @@
                 .FirstOrDefaultAsync();
 
             this.repository.Delete(studentGroup);
+
             await this.repository.SaveChangesAsync();
         }
     }

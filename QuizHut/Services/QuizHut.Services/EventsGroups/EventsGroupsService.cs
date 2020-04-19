@@ -44,6 +44,7 @@
                 .FirstOrDefaultAsync();
 
             this.repository.Delete(eventGroup);
+
             await this.repository.SaveChangesAsync();
         }
     }

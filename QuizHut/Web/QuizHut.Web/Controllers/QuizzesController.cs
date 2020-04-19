@@ -48,7 +48,7 @@
 
             var user = await this.userManager.GetUserAsync(this.User);
             var roles = await this.userManager.GetRolesAsync(user);
-            var userHasPermitionToTakeTheQuiz = await this.quizService.HasUserPermition(user.Id, id);
+            var userHasPermitionToTakeTheQuiz = await this.quizService.HasUserPermission(user.Id, id);
 
             if (!userHasPermitionToTakeTheQuiz)
             {

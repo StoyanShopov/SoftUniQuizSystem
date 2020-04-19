@@ -23,7 +23,7 @@
 
     public class EventsService : IEventsService
     {
-        private readonly IDeletableEntityRepository<Event> repository;
+        private readonly IDeletableEntityRepository<Event> eventRepository;
         private readonly IQuizzesService quizService;
         private readonly IEventsGroupsService eventsGroupsService;
         private readonly IScheduledJobsService scheduledJobsService;
@@ -31,14 +31,14 @@
         private readonly IHubContext<QuizHub> hub;
 
         public EventsService(
-            IDeletableEntityRepository<Event> repository,
+            IDeletableEntityRepository<Event> eventRepository,
             IQuizzesService quizService,
             IEventsGroupsService eventsGroupsService,
             IScheduledJobsService scheduledJobsService,
             IEmailSender emailSender,
             IHubContext<QuizHub> hub)
         {
-            this.repository = repository;
+            this.eventRepository = eventRepository;
             this.quizService = quizService;
             this.eventsGroupsService = eventsGroupsService;
             this.scheduledJobsService = scheduledJobsService;
@@ -49,89 +49,105 @@
         public async Task DeleteAsync(string eventId)
         {
             var @event = await this.GetEventById(eventId);
+
             var quizId = @event.QuizId;
+
             if (quizId != null)
             {
                 await this.quizService.DeleteEventFromQuizAsync(eventId, quizId);
             }
 
-            this.repository.Delete(@event);
-            await this.repository.SaveChangesAsync();
+            this.eventRepository.Delete(@event);
+
+            await this.eventRepository.SaveChangesAsync();
         }
 
         public async Task<IList<T>> GetAllByCreatorIdAsync<T>(string creatorId)
-        => await this.repository.AllAsNoTracking()
-                 .Where(x => x.CreatorId == creatorId)
-                 .OrderByDescending(x => x.CreatedOn)
-                 .To<T>()
-                 .ToListAsync();
+            => await this.eventRepository.AllAsNoTracking()
+                     .Where(x => x.CreatorId == creatorId)
+                     .OrderByDescending(x => x.CreatedOn)
+                     .To<T>()
+                     .ToListAsync();
 
         public async Task<IList<T>> GetPerPageByStudentIdFilteredByStatusAsync<T>(Status status, string studentId, int page, int countPerPage, bool withDeleted)
         {
-            var query = withDeleted == true ? this.repository.AllAsNoTrackingWithDeleted() : this.repository.AllAsNoTracking();
-            query = query.Where(x => x.EventsGroups.Any(x => x.Group.StudentstGroups.Any(x => x.StudentId == studentId)));
+            var query = withDeleted ?
+                this.eventRepository.AllAsNoTrackingWithDeleted() :
+                this.eventRepository.AllAsNoTracking();
+
+            query = query
+                .Where(x => x.EventsGroups
+                    .Any(eventGroup => eventGroup.Group.StudentstGroups
+                        .Any(studentGroup => studentGroup.StudentId == studentId)));
 
             if (status == Status.Active)
             {
                 query = query.Where(x => !x.Results.Any(x => x.StudentId == studentId));
             }
 
-            return await query.Where(x => x.Status == status)
+            var result = await query.Where(x => x.Status == status)
               .OrderByDescending(x => x.CreatedOn)
               .Skip(countPerPage * (page - 1))
               .Take(countPerPage)
               .To<T>()
               .ToListAsync();
+
+            return result;
         }
 
         public async Task<IList<T>> GetAllPerPage<T>(int page, int countPerPage, string creatorId = null)
         {
-            var query = this.repository.AllAsNoTracking();
+            var query = this.eventRepository.AllAsNoTracking();
 
             if (creatorId != null)
             {
                 query = query.Where(x => x.CreatorId == creatorId);
             }
 
-            return await query
+            var result = await query
                    .OrderByDescending(x => x.CreatedOn)
                    .Skip(countPerPage * (page - 1))
                    .Take(countPerPage)
                    .To<T>()
                    .ToListAsync();
+
+            return result;
         }
 
         public async Task<IList<T>> GetAllPerPageByCreatorIdAndStatus<T>(int page, int countPerPage, Status status, string creatorId)
-        => await this.repository
-                     .AllAsNoTracking()
-                     .Where(x => x.Status == status && x.CreatorId == creatorId)
-                     .OrderByDescending(x => x.CreatedOn)
-                     .Skip(countPerPage * (page - 1))
-                     .Take(countPerPage)
-                     .To<T>()
-                     .ToListAsync();
+            => await this.eventRepository
+                         .AllAsNoTracking()
+                         .Where(x => x.Status == status && x.CreatorId == creatorId)
+                         .OrderByDescending(x => x.CreatedOn)
+                         .Skip(countPerPage * (page - 1))
+                         .Take(countPerPage)
+                         .To<T>()
+                         .ToListAsync();
 
-        public async Task<IList<T>> GetAllFiteredByStatusAndGroupAsync<T>(
+        public async Task<IList<T>> GetAllFilteredByStatusAndGroupAsync<T>(
             Status status, string groupId, string creatorId = null)
         {
-            var query = this.repository.AllAsNoTracking().Where(x => !x.EventsGroups.Any(x => x.GroupId == groupId));
+            var query = this.eventRepository.AllAsNoTracking().Where(x => !x.EventsGroups.Any(x => x.GroupId == groupId));
 
             if (creatorId != null)
             {
                 query = query.Where(x => x.CreatorId == creatorId);
             }
 
-            return await query
+            var result = await query
               .Where(x => x.Status != status)
               .OrderByDescending(x => x.CreatedOn)
               .To<T>()
               .ToListAsync();
+
+            return result;
         }
 
         public async Task<string> CreateEventAsync(string name, string activationDate, string activeFrom, string activeTo, string creatorId)
         {
             var activationDateAndTime = this.GetActivationDateAndTimeUtc(activationDate, activeFrom);
             var durationOfActivity = this.GetDurationOfActivity(activationDate, activeFrom, activeTo);
+
             var @event = new Event
             {
                 Name = name,
@@ -141,31 +157,33 @@
                 CreatorId = creatorId,
             };
 
-            await this.repository.AddAsync(@event);
-            await this.repository.SaveChangesAsync();
+            await this.eventRepository.AddAsync(@event);
+            await this.eventRepository.SaveChangesAsync();
 
             return @event.Id;
         }
 
         public async Task<T> GetEventModelByIdAsync<T>(string eventId)
-        => await this.repository
-                .AllAsNoTrackingWithDeleted()
-                .Where(x => x.Id == eventId)
-                .To<T>()
-                .FirstOrDefaultAsync();
+            => await this.eventRepository
+                    .AllAsNoTrackingWithDeleted()
+                    .Where(x => x.Id == eventId)
+                    .To<T>()
+                    .FirstOrDefaultAsync();
 
-        public async Task AssigQuizToEventAsync(string eventId, string quizId, string timeZone)
+        public async Task AssignQuizToEventAsync(string eventId, string quizId, string timeZone)
         {
             var @event = await this.GetEventById(eventId);
+
             @event.QuizId = quizId;
             @event.QuizName = await this.quizService.GetQuizNameByIdAsync(quizId);
             @event.Status = this.GetStatus(@event.ActivationDateAndTime, @event.DurationOfActivity, quizId, timeZone);
-            this.repository.Update(@event);
-            await this.repository.SaveChangesAsync();
+            this.eventRepository.Update(@event);
+
+            await this.eventRepository.SaveChangesAsync();
 
             if (@event.Status != Status.Ended)
             {
-                await this.SheduleStatusChangeAsync(@event.ActivationDateAndTime, @event.DurationOfActivity, @event.Id, @event.Name, @event.Status, timeZone);
+                await this.ScheduleStatusChangeAsync(@event.ActivationDateAndTime, @event.DurationOfActivity, @event.Id, @event.Name, @event.Status, timeZone);
             }
 
             await this.quizService.AssignQuizToEventAsync(eventId, quizId);
@@ -174,6 +192,7 @@
         public async Task DeleteQuizFromEventAsync(string eventId, string quizId)
         {
             var @event = await this.GetEventById(eventId);
+
             @event.QuizId = null;
 
             if (@event.Status == Status.Active)
@@ -182,17 +201,18 @@
                 await this.scheduledJobsService.DeleteJobsAsync(@event.Id, true);
             }
 
-            this.repository.Update(@event);
-            await this.repository.SaveChangesAsync();
+            this.eventRepository.Update(@event);
+
+            await this.eventRepository.SaveChangesAsync();
             await this.quizService.DeleteEventFromQuizAsync(eventId, quizId);
         }
 
         public async Task<IList<T>> GetAllByGroupIdAsync<T>(string groupId)
-        => await this.repository
-            .AllAsNoTracking()
-            .Where(x => x.EventsGroups.Any(x => x.GroupId == groupId))
-            .To<T>()
-            .ToListAsync();
+            => await this.eventRepository
+                .AllAsNoTracking()
+                .Where(ev => ev.EventsGroups.Any(eventGroup => eventGroup.GroupId == groupId))
+                .To<T>()
+                .ToListAsync();
 
         public async Task UpdateAsync(string id, string name, string activationDate, string activeFrom, string activeTo, string timeZone)
         {
@@ -205,12 +225,12 @@
             @event.DurationOfActivity = durationOfActivity;
             @event.Status = this.GetStatus(activationDateAndTime, durationOfActivity, @event.QuizId, timeZone);
 
-            this.repository.Update(@event);
-            await this.repository.SaveChangesAsync();
+            this.eventRepository.Update(@event);
+            await this.eventRepository.SaveChangesAsync();
 
             if (@event.QuizId != null)
             {
-                await this.SheduleStatusChangeAsync(activationDateAndTime, durationOfActivity, id, @event.Name, @event.Status, timeZone);
+                await this.ScheduleStatusChangeAsync(activationDateAndTime, durationOfActivity, id, @event.Name, @event.Status, timeZone);
             }
 
             await this.hub.Clients.All.SendAsync("NewEventStatusUpdate", @event.Status.ToString(), @event.Id);
@@ -232,10 +252,10 @@
             var timeNow = userLocalTimeNow.TimeOfDay;
             var startHours = timeToStart.Hours;
             var nowHours = timeNow.Hours;
-            var startMins = timeToStart.Minutes;
-            var nowMins = timeNow.Minutes;
+            var startMin = timeToStart.Minutes;
+            var nowMin = timeNow.Minutes;
 
-            if (startHours < nowHours || (startHours == nowHours && startMins < nowMins))
+            if (startHours < nowHours || (startHours == nowHours && startMin < nowMin))
             {
                 return ServicesConstants.InvalidStartingTime;
             }
@@ -259,7 +279,7 @@
 
         public async Task SendEmailsToEventGroups(string eventId, string emailHtmlContent)
         {
-            var eventInfo = await this.repository
+            var eventInfo = await this.eventRepository
                 .AllAsNoTracking()
                 .Where(x => x.Id == eventId)
                 .Select(x => new
@@ -283,7 +303,7 @@
 
         public int GetEventsCountByStudentIdAndStatus(string id, Status status)
         {
-            var query = this.repository
+            var query = this.eventRepository
                             .AllAsNoTracking()
                             .Where(x => x.EventsGroups.Any(x => x.Group.StudentstGroups.Any(x => x.StudentId == id)))
                             .Where(x => x.Status == status);
@@ -298,7 +318,7 @@
 
         public int GetAllEventsCount(string creatorId = null)
         {
-            var query = this.repository.AllAsNoTracking();
+            var query = this.eventRepository.AllAsNoTracking();
 
             if (creatorId != null)
             {
@@ -309,19 +329,18 @@
         }
 
         public int GetEventsCountByCreatorIdAndStatus(Status status, string creatorId)
-        => this.repository
-               .AllAsNoTracking()
-               .Where(x => x.Status == status && x.CreatorId == creatorId)
-               .Count();
+            => this.eventRepository
+                .AllAsNoTracking()
+                .Count(x => x.Status == status && x.CreatorId == creatorId);
 
         private async Task<string[]> GetStudentsNamesByEventIdAsync(string id)
-        => await this.repository
-                     .AllAsNoTracking()
-                     .Where(x => x.Id == id)
-                     .SelectMany(x => x.EventsGroups.SelectMany(x => x.Group.StudentstGroups.Select(x => x.Student.UserName)))
-                     .ToArrayAsync();
+            => await this.eventRepository
+                         .AllAsNoTracking()
+                         .Where(x => x.Id == id)
+                         .SelectMany(x => x.EventsGroups.SelectMany(eventGroup => eventGroup.Group.StudentstGroups.Select(x => x.Student.UserName)))
+                         .ToArrayAsync();
 
-        private async Task SheduleStatusChangeAsync(
+        private async Task ScheduleStatusChangeAsync(
             DateTime activationDateAndTime,
             TimeSpan durationOfActivity,
             string eventId,
@@ -362,10 +381,10 @@
         }
 
         private async Task<Event> GetEventById(string id)
-        => await this.repository
-                .AllAsNoTracking()
-                .Where(x => x.Id == id)
-                .FirstOrDefaultAsync();
+            => await this.eventRepository
+                    .AllAsNoTracking()
+                    .Where(x => x.Id == id)
+                    .FirstOrDefaultAsync();
 
         private Status GetStatus(DateTime activationDateAndTime, TimeSpan durationOfActivity, string quizId, string timeZone)
         {
@@ -382,14 +401,14 @@
 
             var startHours = activationDateAndTimeToUserLocalTime.TimeOfDay.Hours;
             var nowHours = userLocalTimeNow.TimeOfDay.Hours;
-            var startMins = activationDateAndTimeToUserLocalTime.TimeOfDay.Minutes;
-            var nowMins = userLocalTimeNow.TimeOfDay.Minutes;
+            var startMin = activationDateAndTimeToUserLocalTime.TimeOfDay.Minutes;
+            var nowMin = userLocalTimeNow.TimeOfDay.Minutes;
 
             var endHours = activationDateAndTimeToUserLocalTime.Add(durationOfActivity).TimeOfDay.Hours;
             var endMinutes = activationDateAndTimeToUserLocalTime.Add(durationOfActivity).TimeOfDay.Minutes;
 
-            if (startHours <= nowHours && startMins <= nowMins
-                && (endHours > nowHours || (endHours == nowHours && endMinutes >= nowMins)))
+            if (startHours <= nowHours && startMin <= nowMin
+                && (endHours > nowHours || (endHours == nowHours && endMinutes >= nowMin)))
             {
                 return Status.Active;
             }
@@ -398,10 +417,10 @@
         }
 
         private DateTime GetActivationDateAndTimeUtc(string activationDate, string activeFrom)
-        => DateTime.ParseExact(activationDate, "dd/MM/yyyy", CultureInfo.InvariantCulture).Add(TimeSpan.Parse(activeFrom)).ToUniversalTime();
+            => DateTime.ParseExact(activationDate, "dd/MM/yyyy", CultureInfo.InvariantCulture).Add(TimeSpan.Parse(activeFrom)).ToUniversalTime();
 
         private TimeSpan GetDurationOfActivity(string activationDate, string activeFrom, string activeTo)
-        => DateTime.ParseExact(activationDate, "dd/MM/yyyy", CultureInfo.InvariantCulture).Add(TimeSpan.Parse(activeTo)).ToUniversalTime()
+            => DateTime.ParseExact(activationDate, "dd/MM/yyyy", CultureInfo.InvariantCulture).Add(TimeSpan.Parse(activeTo)).ToUniversalTime()
             - this.GetActivationDateAndTimeUtc(activationDate, activeFrom);
     }
 }

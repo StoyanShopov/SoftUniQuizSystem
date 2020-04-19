@@ -512,7 +512,7 @@
                 IsAssigned = false,
             };
 
-            var resultModelCollection = await this.Service.GetAllFiteredByStatusAndGroupAsync<EventsAssignViewModel>(Status.Active, groupId);
+            var resultModelCollection = await this.Service.GetAllFilteredByStatusAndGroupAsync<EventsAssignViewModel>(Status.Active, groupId);
 
             Assert.Single(resultModelCollection);
             Assert.IsAssignableFrom<IList<EventsAssignViewModel>>(resultModelCollection);
@@ -544,7 +544,7 @@
                 IsAssigned = false,
             };
 
-            var resultModelCollection = await this.Service.GetAllFiteredByStatusAndGroupAsync<EventsAssignViewModel>(Status.Active, groupId, creatorId);
+            var resultModelCollection = await this.Service.GetAllFilteredByStatusAndGroupAsync<EventsAssignViewModel>(Status.Active, groupId, creatorId);
 
             Assert.Single(resultModelCollection);
             Assert.IsAssignableFrom<IList<EventsAssignViewModel>>(resultModelCollection);
@@ -772,7 +772,7 @@
             await this.DbContext.SaveChangesAsync();
             this.DbContext.Entry<Event>(@event).State = EntityState.Detached;
 
-            await this.Service.AssigQuizToEventAsync(@event.Id, quiz.Id, "Europe/London");
+            await this.Service.AssignQuizToEventAsync(@event.Id, quiz.Id, "Europe/London");
 
             var eventWithAssignedQuiz = await this.DbContext.Events.FirstOrDefaultAsync(x => x.Id == @event.Id);
 

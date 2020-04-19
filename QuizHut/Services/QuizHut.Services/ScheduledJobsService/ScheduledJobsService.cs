@@ -35,8 +35,10 @@
 
         public async Task CreateStartEventJobAsync(string eventId, TimeSpan activationDelay)
         {
-            var activationScheduleJobId = this.backgroundJobClient.Schedule(() => this.SetStatusChangeJobAsync(eventId, Status.Active), activationDelay);
-            var job = new ScheduledJob()
+            var activationScheduleJobId = this.backgroundJobClient
+                .Schedule(() => this.SetStatusChangeJobAsync(eventId, Status.Active), activationDelay);
+
+            var job = new ScheduledJob
             {
                 JobId = activationScheduleJobId,
                 EventId = eventId,
@@ -49,8 +51,10 @@
 
         public async Task CreateEndEventJobAsync(string eventId, TimeSpan endingDelay)
         {
-            var endingScheduleJobId = this.backgroundJobClient.Schedule(() => this.SetStatusChangeJobAsync(eventId, Status.Ended), endingDelay);
-            var job = new ScheduledJob()
+            var endingScheduleJobId = this.backgroundJobClient
+                .Schedule(() => this.SetStatusChangeJobAsync(eventId, Status.Ended), endingDelay);
+
+            var job = new ScheduledJob
             {
                 JobId = endingScheduleJobId,
                 EventId = eventId,
@@ -93,7 +97,10 @@
 
             if (status == Status.Active)
             {
-                await this.hub.Clients.Group(GlobalConstants.AdministratorRoleName).SendAsync("ActiveEventUpdate", @event.Name);
+                await this.hub.Clients
+                    .Group(GlobalConstants.AdministratorRoleName)
+                    .SendAsync("ActiveEventUpdate", @event.Name);
+
                 foreach (var name in studentNames)
                 {
                     await this.hub.Clients.Group(name).SendAsync("NewActiveEventMessage");
@@ -101,7 +108,10 @@
             }
             else
             {
-                await this.hub.Clients.Group(GlobalConstants.AdministratorRoleName).SendAsync("EndedEventUpdate", @event.Name);
+                await this.hub.Clients
+                    .Group(GlobalConstants.AdministratorRoleName)
+                    .SendAsync("EndedEventUpdate", @event.Name);
+
                 foreach (var name in studentNames)
                 {
                     await this.hub.Clients.Group(name).SendAsync("NewEndedEventMessage");
@@ -115,15 +125,18 @@
 
             @event.Status = status;
             this.eventRepository.Update(@event);
+
             await this.eventRepository.SaveChangesAsync();
             await this.hub.Clients.All.SendAsync("NewEventStatusUpdate", @event.Status.ToString(), @event.Id);
         }
 
         private async Task<string[]> GetStudentsNamesByEventIdAsync(string id)
-        => await this.eventRepository
-                   .AllAsNoTracking()
-                   .Where(x => x.Id == id)
-                   .SelectMany(x => x.EventsGroups.SelectMany(x => x.Group.StudentstGroups.Select(x => x.Student.UserName)))
-                   .ToArrayAsync();
+            => await this.eventRepository
+                       .AllAsNoTracking()
+                       .Where(x => x.Id == id)
+                       .SelectMany(x => x.EventsGroups
+                           .SelectMany(eventGroup => eventGroup.Group.StudentstGroups
+                               .Select(studentGroup => studentGroup.Student.UserName)))
+                       .ToArrayAsync();
     }
 }

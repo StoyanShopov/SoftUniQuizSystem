@@ -41,10 +41,14 @@
                     .FirstOrDefaultAsync();
 
                 user.TeacherId = teacherId;
+
                 teacher.Students.Add(user);
+
                 this.userRepository.Update(user);
                 this.userRepository.Update(teacher);
+
                 await this.userRepository.SaveChangesAsync();
+
                 return true;
             }
 
@@ -64,9 +68,12 @@
                    .FirstOrDefaultAsync();
 
             studentToRemove.TeacherId = null;
+
             teacher.Students.Remove(studentToRemove);
+
             this.userRepository.Update(studentToRemove);
             this.userRepository.Update(teacher);
+
             await this.userRepository.SaveChangesAsync();
         }
 
@@ -86,7 +93,12 @@
                 query = query.Where(x => x.TeacherId == teacherId);
             }
 
-            return await query.Where(x => !x.Roles.Any()).To<T>().ToListAsync();
+            var result = await query
+                .Where(x => !x.Roles.Any())
+                .To<T>()
+                .ToListAsync();
+
+            return result;
         }
 
         public async Task<IList<T>> GetAllByRoleAsync<T>(string roleName)
@@ -104,15 +116,17 @@
         }
 
         public async Task<IList<T>> GetAllByGroupIdAsync<T>(string groupId)
-        => await this.userRepository
-            .AllAsNoTracking()
-            .Where(x => x.StudentsInGroups.Select(x => x.GroupId).Contains(groupId))
-            .To<T>()
-            .ToListAsync();
+            => await this.userRepository
+                .AllAsNoTracking()
+                .Where(x => x.StudentsInGroups.Select(x => x.GroupId).Contains(groupId))
+                .To<T>()
+                .ToListAsync();
 
         public int GetAllStudentsCount(string teacherId = null)
         {
-            var query = this.userRepository.AllAsNoTracking().Where(x => !x.Roles.Any());
+            var query = this.userRepository
+                .AllAsNoTracking()
+                .Where(x => !x.Roles.Any());
 
             if (teacherId != null)
             {
@@ -124,18 +138,22 @@
 
         public async Task<IEnumerable<T>> GetAllStudentsPerPageAsync<T>(int page, int countPerPage, string teacherId = null)
         {
-            var query = this.userRepository.AllAsNoTracking().Where(x => !x.Roles.Any());
+            var query = this.userRepository
+                .AllAsNoTracking()
+                .Where(x => !x.Roles.Any());
 
             if (teacherId != null)
             {
                 query = query.Where(x => x.TeacherId == teacherId);
             }
 
-            return await query.OrderByDescending(x => x.CreatedOn)
-            .Skip(countPerPage * (page - 1))
-            .Take(countPerPage)
-            .To<T>()
-            .ToListAsync();
+            var result = await query.OrderByDescending(x => x.CreatedOn)
+                .Skip(countPerPage * (page - 1))
+                .Take(countPerPage)
+                .To<T>()
+                .ToListAsync();
+
+            return result;
         }
     }
 }

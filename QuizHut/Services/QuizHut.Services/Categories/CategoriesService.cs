@@ -24,20 +24,26 @@
 
         public async Task<string> CreateCategoryAsync(string name, string creatorId)
         {
-            var category = new Category() { Name = name, CreatorId = creatorId };
+            var category = new Category
+            {
+                Name = name,
+                CreatorId = creatorId,
+            };
+
             await this.repository.AddAsync(category);
             await this.repository.SaveChangesAsync();
+
             return category.Id;
         }
 
         public async Task<IEnumerable<T>> GetAllPerPage<T>(int page, int countPerPage, string creatorId)
-        => await this.repository.AllAsNoTracking()
-                .Where(x => x.CreatorId == creatorId)
-                .OrderByDescending(x => x.CreatedOn)
-                .Skip(countPerPage * (page - 1))
-                .Take(countPerPage)
-                .To<T>()
-                .ToListAsync();
+            => await this.repository.AllAsNoTracking()
+                    .Where(x => x.CreatorId == creatorId)
+                    .OrderByDescending(x => x.CreatedOn)
+                    .Skip(countPerPage * (page - 1))
+                    .Take(countPerPage)
+                    .To<T>()
+                    .ToListAsync();
 
         public async Task AssignQuizzesToCategoryAsync(string id, IEnumerable<string> quizzesIds)
         {
@@ -52,8 +58,11 @@
                     .AllAsNoTracking()
                     .Where(x => x.Id == quizId)
                     .FirstOrDefaultAsync();
+
                 category.Quizzes.Add(quiz);
+
                 quiz.CategoryId = id;
+
                 this.repository.Update(category);
                 this.quizRepository.Update(quiz);
             }
@@ -68,15 +77,23 @@
                 .AllAsNoTracking()
                 .Where(x => x.Id == id)
                 .FirstOrDefaultAsync();
+
             this.repository.Delete(category);
+
             await this.repository.SaveChangesAsync();
         }
 
         public async Task UpdateNameAsync(string id, string newName)
         {
-            var category = await this.repository.AllAsNoTracking().Where(x => x.Id == id).FirstOrDefaultAsync();
+            var category = await this.repository
+                .AllAsNoTracking()
+                .Where(x => x.Id == id)
+                .FirstOrDefaultAsync();
+
             category.Name = newName;
+
             this.repository.Update(category);
+
             await this.repository.SaveChangesAsync();
         }
 
@@ -94,20 +111,24 @@
 
             category.Quizzes.Remove(quiz);
             quiz.CategoryId = null;
+
             this.repository.Update(category);
             this.quizRepository.Update(quiz);
+
             await this.repository.SaveChangesAsync();
             await this.quizRepository.SaveChangesAsync();
         }
 
         public async Task<T> GetByIdAsync<T>(string id)
-        => await this.repository
-            .AllAsNoTracking()
-            .Where(x => x.Id == id)
-            .To<T>()
-            .FirstOrDefaultAsync();
+            => await this.repository
+                .AllAsNoTracking()
+                .Where(x => x.Id == id)
+                .To<T>()
+                .FirstOrDefaultAsync();
 
         public int GetAllCategoriesCount(string creatorId)
-        => this.repository.AllAsNoTracking().Where(x => x.CreatorId == creatorId).Count();
+            => this.repository
+                .AllAsNoTracking()
+                .Count(x => x.CreatorId == creatorId);
     }
 }

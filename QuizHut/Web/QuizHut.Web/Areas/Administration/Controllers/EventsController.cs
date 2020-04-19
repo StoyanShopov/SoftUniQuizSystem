@@ -199,7 +199,7 @@
                 return this.View(model);
             }
 
-            await this.service.AssigQuizToEventAsync(model.Id, quizzes[0].Id, model.TimeZone);
+            await this.service.AssignQuizToEventAsync(model.Id, quizzes[0].Id, model.TimeZone);
             return this.RedirectToAction("EventDetails", new { id = model.Id });
         }
 

@@ -33,11 +33,17 @@
                 CreatorId = creatorId,
             };
 
-            var passwordEntitiy = new Password { Content = password, QuizId = quiz.Id };
-            await this.passwordRepository.AddAsync(passwordEntitiy);
+            var passwordEntity = new Password
+            {
+                Content = password,
+                QuizId = quiz.Id,
+            };
+
+            await this.passwordRepository.AddAsync(passwordEntity);
             await this.passwordRepository.SaveChangesAsync();
 
-            quiz.PasswordId = passwordEntitiy.Id;
+            quiz.PasswordId = passwordEntity.Id;
+
             await this.quizRepository.AddAsync(quiz);
             await this.quizRepository.SaveChangesAsync();
 
@@ -55,27 +61,31 @@
                 query = query.Where(x => x.CreatorId == creatorId);
             }
 
-            return await query.OrderByDescending(x => x.CreatedOn)
+            var result = await query.OrderByDescending(x => x.CreatedOn)
                 .To<T>()
                 .ToListAsync();
+
+            return result;
         }
 
         public async Task<T> GetQuizByIdAsync<T>(string id)
-       => await this.quizRepository
-               .AllAsNoTracking()
-               .Where(x => x.Id == id)
-               .To<T>()
-               .FirstOrDefaultAsync();
+            => await this.quizRepository
+                   .AllAsNoTracking()
+                   .Where(x => x.Id == id)
+                   .To<T>()
+                   .FirstOrDefaultAsync();
 
         public async Task DeleteByIdAsync(string id)
         {
             var quiz = await this.quizRepository
                 .AllAsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id);
+
             var password = await this.passwordRepository
                 .AllAsNoTracking()
                 .Where(x => x.QuizId == id)
                 .FirstOrDefaultAsync();
+
             this.passwordRepository.Delete(password);
             this.quizRepository.Delete(quiz);
 
@@ -88,6 +98,7 @@
             var quiz = await this.quizRepository
                .AllAsNoTracking()
                .FirstOrDefaultAsync(x => x.Id == id);
+
             var passwordEntity = await this.passwordRepository
                 .AllAsNoTracking()
                 .Where(x => x.QuizId == id)
@@ -96,6 +107,7 @@
             if (passwordEntity.Content != password)
             {
                 passwordEntity.Content = password;
+
                 this.passwordRepository.Update(passwordEntity);
                 await this.passwordRepository.SaveChangesAsync();
             }
@@ -109,12 +121,12 @@
         }
 
         public async Task<string> GetQuizIdByPasswordAsync(string password)
-        => await this.quizRepository.AllAsNoTracking()
-            .Where(x => x.Password.Content == password)
-            .Select(x => x.Id)
-            .FirstOrDefaultAsync();
+            => await this.quizRepository.AllAsNoTracking()
+                .Where(x => x.Password.Content == password)
+                .Select(x => x.Id)
+                .FirstOrDefaultAsync();
 
-        public async Task<bool> HasUserPermition(string userId, string quizId)
+        public async Task<bool> HasUserPermission(string userId, string quizId)
         {
             var quizQuery = this.quizRepository
                 .AllAsNoTracking()
@@ -135,18 +147,21 @@
             var results = await quizQuery
                 .SelectMany(x => x.Event.Results.Where(x => x.StudentId == userId))
                 .ToListAsync();
-            if (results.Count() > 0)
+
+            if (results.Any())
             {
                 return false;
             }
 
             var eventGroups = await quizQuery
                 .SelectMany(x => x.Event.EventsGroups
-                .Where(x => x.Group.StudentstGroups
-                .Any(x => x.StudentId == userId)))
+                .Where(eventGroup => eventGroup.Group.StudentstGroups
+                .Any(studentGroup => studentGroup.StudentId == userId)))
                 .ToListAsync();
 
-            return eventGroups.Count() > 0;
+            var result = eventGroups.Any();
+
+            return result;
         }
 
         public async Task AssignQuizToEventAsync(string eventId, string quizId)
@@ -157,6 +172,7 @@
                 .FirstOrDefaultAsync();
 
             quiz.EventId = eventId;
+
             this.quizRepository.Update(quiz);
             await this.quizRepository.SaveChangesAsync();
         }
@@ -169,45 +185,50 @@
                 .FirstOrDefaultAsync();
 
             quiz.EventId = null;
+
             this.quizRepository.Update(quiz);
             await this.quizRepository.SaveChangesAsync();
         }
 
         public async Task<IList<T>> GetUnAssignedToCategoryByCreatorIdAsync<T>(string categoryId, string creatorId)
-        => await this.quizRepository
-            .AllAsNoTracking()
-            .Where(x => x.CreatorId == creatorId && x.CategoryId != categoryId)
-            .To<T>()
-            .ToListAsync();
+            => await this.quizRepository
+                .AllAsNoTracking()
+                .Where(x => x.CreatorId == creatorId && x.CategoryId != categoryId)
+                .To<T>()
+                .ToListAsync();
 
         public async Task<IList<T>> GetAllByCategoryIdAsync<T>(string id)
-        => await this.quizRepository
-            .AllAsNoTracking()
-            .Where(x => x.CategoryId == id)
-            .To<T>()
-            .ToListAsync();
+            => await this.quizRepository
+                .AllAsNoTracking()
+                .Where(x => x.CategoryId == id)
+                .To<T>()
+                .ToListAsync();
 
         public async Task<string> GetCreatorIdByQuizIdAsync(string id)
-        => await this.quizRepository
-                .AllAsNoTracking()
-                .Where(x => x.Id == id)
-                .Select(x => x.CreatorId)
-                .FirstOrDefaultAsync();
+            => await this.quizRepository
+                    .AllAsNoTracking()
+                    .Where(x => x.Id == id)
+                    .Select(x => x.CreatorId)
+                    .FirstOrDefaultAsync();
 
         public async Task<IEnumerable<T>> GetAllPerPageAsync<T>(int page, int countPerPage, string creatorId = null)
         {
-            var query = this.quizRepository.AllAsNoTracking();
+            var query = this.quizRepository
+                .AllAsNoTracking();
 
             if (creatorId != null)
             {
                 query = query.Where(x => x.CreatorId == creatorId);
             }
 
-            return await query.OrderByDescending(x => x.CreatedOn)
-            .Skip(countPerPage * (page - 1))
-            .Take(countPerPage)
-            .To<T>()
-            .ToListAsync();
+            var result = await query
+                .OrderByDescending(x => x.CreatedOn)
+                .Skip(countPerPage * (page - 1))
+                .Take(countPerPage)
+                .To<T>()
+                .ToListAsync();
+
+            return result;
         }
 
         public int GetAllQuizzesCount(string creatorId = null)
@@ -219,13 +240,15 @@
                 query = query.Where(x => x.CreatorId == creatorId);
             }
 
-            return query.Count();
+            var result = query.Count();
+
+            return result;
         }
 
         public async Task<string> GetQuizNameByIdAsync(string id)
-        => await this.quizRepository.AllAsNoTracking()
-             .Where(x => x.Id == id)
-             .Select(x => x.Name)
-             .FirstOrDefaultAsync();
+            => await this.quizRepository.AllAsNoTracking()
+                 .Where(x => x.Id == id)
+                 .Select(x => x.Name)
+                 .FirstOrDefaultAsync();
     }
 }
