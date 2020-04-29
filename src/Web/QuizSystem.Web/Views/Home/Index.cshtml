@@ -1,0 +1,20 @@
+﻿@model StarContestInputModel
+
+@{
+    this.ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome to SoftUni Quiz System</h1>
+
+    <a asp-controller="Quizzes" asp-action="Index">Go</a>
+
+    <form asp-controller="Contests" asp-action="Start" method="post">
+        <label id="Password" class="form-group">Password</label>
+        <input type="Password" id="Password" name="Password" class="form-group" />
+        <span class="text-danger"></span>
+        <submit class="btn btn-primary"></submit>
+    </form>
+</div>
+
+

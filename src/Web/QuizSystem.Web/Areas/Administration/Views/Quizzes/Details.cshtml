@@ -1,0 +1,35 @@
+﻿@using QuizSystem.Services.Data
+@model DetailQuizViewModel
+@{
+    this.ViewData["Title"] = "Admin dashboard";
+}
+
+
+
+@Model.Name
+
+@foreach (var question in @Model.Questions)
+{
+    @question.Id
+    @question.Text
+
+    foreach (var answer in question.Answers)
+    {
+        @answer.Id
+        @answer.Text
+        @answer.IsFreeAnswer
+    }
+}
+
+<form asp-controller="Quizzes" asp-action="ImportQuestions" asp-route-id="@Model.Id" enctype="multipart/form-data">
+    <input name="file_1"
+           type="file"
+           onchange="this.form.submit();"
+           value="Import Questions"
+           class="nav-link  btn btn-primary" />
+</form>
+
+@section Scripts
+{
+    $("input[name='file_1']").change(function () { this.form.submit(); });
+}

@@ -1,0 +1,50 @@
+﻿@model DetailQuizViewModel
+
+@using QuizSystem.Common
+@{
+    this.ViewData["Title"] = "Home Page";
+    var counter = 1;
+}
+<div class="rounded mt-3 text-white shadow p-5 text-center mb-5">
+    <p class="mb-0 font-weight-bold text-primary">Limited Time Only!</p>
+    <div id="clock-a" class="mb-0 font-weight-bold text-primary">
+        30:00
+    </div>
+</div>
+
+<form asp-controller="Quizzes" asp-action="Finish" method="post">
+    @foreach (var question in Model.Questions)
+    {
+        <div class="container-fluid bg-gray mt-3 rounded shadow">
+            <div class="form-group">
+                <div class="modal-body">
+                    <div class="quiz" id="quiz" data-toggle="buttons">
+                        <h1 class="text-center mt-2">Question</h1>
+                        <input hidden name="QuestionId" value="@question.Id" />
+                        <p class="text-center">
+                            @question.Text
+                        </p>
+                        @foreach (var answer in question.Answers)
+                        {
+                            <label class="btn btn-lg btn-primary btn-block">
+                                <span class="btn-label">
+                                    <i class="glyphicon glyphicon-chevron-right"></i>
+                                </span>
+                                <input type="checkbox" name="AnswerId" value="@answer.Id">@answer.Text
+                            </label>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <button type="submit" class="btn btn-primary">Finish</button>
+</form>
+<button onclick="myFunction()">davai</button>
+@section Scripts{
+    <script>
+        function myFunction() {
+           
+        }
+    </script>
+}

@@ -1,0 +1,26 @@
+﻿@model IEnumerable<AllQuizViewModel>
+@{
+    this.ViewData["Title"] = "All Quizzes";
+}
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th scope="col">Id</th>
+        <th scope="col">Name</th>
+        <th scope="col">Details</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in this.Model)
+    {
+        <tr>
+            <th scope="row">@item.Id</th>
+            <td>@item.Name</td>
+            <td>
+                <a asp-area="Administration" asp-controller="Quizzes" asp-action="Details" asp-route-quizId="@item.Id">Details</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
