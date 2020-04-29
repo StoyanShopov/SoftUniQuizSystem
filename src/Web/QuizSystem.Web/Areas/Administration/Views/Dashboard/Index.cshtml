@@ -1,0 +1,34 @@
+﻿@model QuizSystem.Web.ViewModels.Administration.Dashboard.IndexViewModel
+@{
+    this.ViewData["Title"] = "Admin dashboard";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-xl-4 mt-3">
+            <img src="~/img/SoftUni_Symbol.png" />
+            <a asp-area="Administration" asp-controller="Quizzes" asp-action="All">Quizzes</a>
+        </div>
+        <div class="col-xl-4 mt-3">
+            <img src="~/img/SoftUni_Symbol.png" />
+            <a asp-area="Administration" asp-controller="Contests" asp-action="All">Contests</a>
+        </div>
+        <div class="col-xl-4 mt-3">
+            <img src="~/img/SoftUni_Symbol.png" />
+            <a asp-area="Administration" asp-controller="Contests" asp-action="All">Users</a>
+        </div>
+        <div class="col-xl-4 mt-3">
+            <img src="~/img/SoftUni_Symbol.png" />
+            <a asp-area="Administration" asp-controller="Quizzes" asp-action="Create">Create Quiz</a>
+        </div>
+        <div class="col-xl-4 mt-3">
+            <img src="~/img/SoftUni_Symbol.png" />
+            <a asp-area="Administration" asp-controller="Contests" asp-action="Create">Create Contest</a>
+        </div>
+        <div class="col-xl-4 mt-3">
+            <img src="~/img/SoftUni_Symbol.png" />
+            <a asp-area="Administration" asp-controller="Contests" asp-action="Create">Statistics</a>
+        </div>
+    </div>
+</div>
+    

@@ -1,0 +1,57 @@
+﻿@model CreateAnswerInputModel
+@{
+    this.ViewData["Title"] = "Create Question";
+    var questionId = this.ViewData["QuestionId"];
+}
+<div class="col-12 offset-md-2 col-md-8 row mt-4">
+    <form enctype="multipart/form-data" asp-controller="Answers" asp-action="Create" method="post">
+        <div class="component">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h4 class="card-title">Add New Answers</h4>
+                    <p class="card-text" style="display: block;">
+                        <span class="text-primary mr-1">∗</span>
+                        You can always edit it later.
+                    </p>
+                </div>
+                <div class="card-footer pb-5">
+                    <div class="form-group">
+                        <label asp-for="@Model.Text">Question</label>
+                        <textarea asp-for="@Model.Text" class="form-control" rows="15"></textarea>
+                        <span asp-validation-for="@Model.Text" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="@Model.IsFreeAnswer"></label>
+                        <input asp-for="@Model.IsFreeAnswer" />
+                        <span asp-validation-for="@Model.IsFreeAnswer" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="@Model.IsCorrect"></label>
+                        <input asp-for="@Model.IsCorrect" />
+                        <span asp-validation-for="@Model.IsCorrect" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <input asp-for="@Model.QuestionId" hidden value="@questionId" />
+                    </div>
+                    <div class="row mx-1 text-white">
+                        <button type="submit" class="btn btn-primary btn-block col-md-5 mt-5">Create</button>
+                        <div class="col-1 mr-4"></div>
+                        <a class="btn btn-primary btn-block col-md-5 mt-5" asp-area="Administration" asp-controller="Dashboard" asp-action="Index">Cancel</a>
+                        <br/>
+                        <a class="btn btn-primary btn-block mt-5" asp-area="Administration" asp-controller="Questions" asp-action="Create">Add New Question</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="/lib/tinymce/tinymce.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    tinymce.init({
+        selector: "#Text",
+        plugins: [
+            "image paste table link code media"
+        ]
+    });
+</script>
