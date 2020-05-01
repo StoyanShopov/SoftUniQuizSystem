@@ -6,11 +6,13 @@
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Http;
+    using Microsoft.EntityFrameworkCore.Metadata.Conventions;
     using OfficeOpenXml;
     using QuizSystem.Data.Common.Repositories;
     using QuizSystem.Data.Models;
     using QuizSystem.Services.Mapping;
     using QuizSystem.Web.ViewModels.Administration.Quizzes.InputModels;
+    using Web.ViewModels.Quizzes.InputModels;
 
     public class QuizzesService : IQuizzesService
     {
@@ -105,6 +107,39 @@
             await this.answerRepository.SaveChangesAsync();
 
             return quizId;
+        }
+
+        public Task<int> SubmitAsync(QuizSubmitInputModel model)
+        {
+            return null;
+
+            var correctAnswersCollection = this.quizRepository
+                .All()
+                .Where(x => x.Id == model.QuizId)
+                .SelectMany(x => x.Questions)
+                .SelectMany(x => x.Answers)
+                .Where(a => a.IsCorrect)
+                .Select(t => t.Id)
+                .ToList();
+
+
+            int counter = 0;
+
+            foreach (var question in model.Questions)
+            {
+                var checkedAnswers = question.Answers.Where(x => x.Checked).ToList();
+
+                foreach (var checkedAnswer in checkedAnswers)
+                {
+                    if (!correctAnswersCollection.Contains(checkedAnswer.AnswerId))
+                    {
+                        break;
+                    }
+                }
+            }
+
+            
+
         }
     }
 }

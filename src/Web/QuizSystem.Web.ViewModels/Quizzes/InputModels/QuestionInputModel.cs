@@ -2,10 +2,10 @@
 {
     using System.Collections.Generic;
 
-    public class FinishQuizQuestionInputModel
+    public class QuestionInputModel
     {
         public string QuestionId { get; set; }
 
-        public IEnumerable<FinishQuizQuestionAnswerCheckBoxInputModel> Answers { get; set; }
+        public IEnumerable<CheckBoxInputModel> Answers { get; set; }
     }
 }

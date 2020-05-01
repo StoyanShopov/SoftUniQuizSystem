@@ -46,6 +46,7 @@
         {
             var quiz = this.quizzesService.GetById<DetailQuizViewModel>(quizId);
 
+
             return this.View(quiz);
         }
 

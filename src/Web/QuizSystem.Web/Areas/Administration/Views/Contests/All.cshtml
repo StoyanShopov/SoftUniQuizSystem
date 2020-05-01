@@ -3,11 +3,13 @@
     this.ViewData["Title"] = "Admin Contests";
 }
 
-<table class="table table-striped">
+<table class="table table-striped table-bordered mt-3">
     <thead>
     <tr>
-        <th scope="col">Id</th>
         <th scope="col">Name</th>
+        <th scope="col">Password</th>
+        <th scope="col">Start Date</th>
+        <th scope="col">End Date</th>
         <th scope="col">Details</th>
     </tr>
     </thead>
@@ -15,8 +17,10 @@
     @foreach (var item in this.Model)
     {
         <tr>
-            <th scope="row">@item.Id</th>
-            <td>@item.Name</td>
+            <th scope="row">@item.Name</th>
+            <td>@item.Password</td>
+            <td>@item.StartDateTime</td>
+            <td>@item.EndDateTime</td>
             <td>
                 <a asp-area="Administration" asp-controller="Contests" asp-action="Details" asp-route-contestId="@item.Id">Details</a>
             </td>

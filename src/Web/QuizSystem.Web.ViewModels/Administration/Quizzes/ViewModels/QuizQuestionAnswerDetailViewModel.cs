@@ -9,6 +9,6 @@
 
         public string Text { get; set; }
 
-        public bool IsFreeAnswer { get; set; }
+        public bool IsChecked { get; set; }
     }
 }

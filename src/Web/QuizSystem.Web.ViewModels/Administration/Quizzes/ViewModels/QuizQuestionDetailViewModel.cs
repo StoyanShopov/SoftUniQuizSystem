@@ -11,6 +11,6 @@
 
         public string Text { get; set; }
 
-        public IEnumerable<QuizQuestionAnswerDetailViewModel> Answers { get; set; }
+        public List<QuizQuestionAnswerDetailViewModel> Answers { get; set; }
     }
 }

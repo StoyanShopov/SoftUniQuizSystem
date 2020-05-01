@@ -2,10 +2,12 @@
 {
     using System.Collections.Generic;
 
-    public class FinishQuizInputModel
+    public class QuizSubmitInputModel
     {
+        public string ContestId { get; set; }
+
         public string QuizId { get; set; }
 
-        public IEnumerable<FinishQuizQuestionInputModel> Questions { get; set; }
+        public IEnumerable<QuestionInputModel> Questions { get; set; }
     }
 }
