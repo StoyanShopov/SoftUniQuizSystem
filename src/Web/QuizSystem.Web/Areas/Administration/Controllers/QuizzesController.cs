@@ -39,13 +39,12 @@
 
             var quizId = await this.quizzesService.CreateAsync(inputModel);
 
-            return this.RedirectToAction("Create", "Questions", quizId);
+            return this.RedirectToAction("Create", "Questions", new { quizId });
         }
 
         public IActionResult Details(string quizId)
         {
             var quiz = this.quizzesService.GetById<DetailQuizViewModel>(quizId);
-
 
             return this.View(quiz);
         }
@@ -54,6 +53,7 @@
         public async Task<IActionResult> ImportQuestions([FromForm(Name = "file_1")] IFormFile file, string id)
         {
             var quizId = await this.quizzesService.ImportQuestionsAsync(id, file);
+
             return this.RedirectToAction("Details", new { quizId });
         }
     }

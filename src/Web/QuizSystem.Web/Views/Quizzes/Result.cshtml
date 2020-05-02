@@ -1,0 +1,18 @@
+﻿@model QuizSystem.Web.ViewModels.Quizzes.ViewModels.ResultQuizViewModel
+
+@{
+    this.ViewData["Title"] = "Quiz Result";
+}
+
+<div class="row">
+    <div class="col-4">
+        Max Points   @TempData["TotalPoints"]
+    </div>
+    <div class="col-4">
+        Correct Answers  @TempData["CorrectAnswers"]
+    </div>
+    <div class="col-4">
+        Wrong Answers  @TempData["WrongAnswers"]
+    </div>
+</div>
+

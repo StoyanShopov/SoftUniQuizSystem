@@ -1,11 +1,9 @@
-﻿@model DetailQuizViewModel
+﻿@model QuizSystem.Web.ViewModels.Quizzes.ViewModels.ContestViewModel
 
-@using QuizSystem.Common
-@using QuizSystem.Data.Models
 @{
-    this.ViewData["Title"] = "Admin Quiz Detail Page";
-    var counter = 1;
+    this.ViewData["Title"] = "Quiz";
 }
+
 <style>
     #clockdiv {
         font-family: sans-serif;
@@ -74,17 +72,9 @@
     </div>
 </div>
 
-<form asp-controller="Quizzes" asp-action="ImportQuestions" asp-route-id="@Model.Id" enctype="multipart/form-data">
-    <input name="file_1"
-           type="file"
-           onchange="this.form.submit();"
-           value="Import Questions"
-           class="nav-link  btn btn-primary" />
-</form>
-
 <div class="row align-items-center">
     <div class="col-1">
-        <div class="arrow-left" onclick="back()">
+        <div class="arrow-left" onclick="move(-1)">
         </div>
     </div>
     <div class="col-10">
@@ -93,24 +83,24 @@
             <div class="form-group">
                 <button type="submit" class="btn btn-primary float-right" onclick="return confirm('Are you sure you want to submit?');">Finish</button>
             </div>
-            @for (int i = 0; i < Model.Questions.Count; i++)
+            <input hidden asp-for="@Model.Quiz.Id" />
+            @for (int i = 0; i < Model.Quiz.Questions.Count; i++)
             {
-                <input hidden asp-for="@Model.Questions[i].Id" />
-
-                <div style="display: @(counter != 1 ? "none" : "")" id="question-@(counter++)">
+                <input hidden asp-for="@Model.Quiz.Questions[i].Id" />
+                <div style="display: @(i != 0 ? "none" : "")" id="question-@(i + 1)">
                     <div class="container-fluid bg-gray mt-1 rounded shadow">
                         <div class="form-group">
                             <div class="modal-body">
-                                <div class="quiz" id="quiz" data-toggle="buttons">
-                                    <h1 class="text-center mt-2">Question</h1>
+                                <div data-toggle="buttons">
+                                    <h1 class="text-center mt-2">Question - @(i + 1)</h1>
                                     <p class="text-center">
-                                        @Model.Questions[i].Text
+                                        @Model.Quiz.Questions[i].Text
                                     </p>
-                                    @for (int j = 0; j < Model.Questions[i].Answers.Count; j++)
+                                    @for (int j = 0; j < Model.Quiz.Questions[i].Answers.Count; j++)
                                     {
                                         <label class="btn btn-lg btn-primary btn-block text-left">
-                                            <input asp-for="@Model.Questions[i].Answers[j].Checked">@Html.Raw(Model.Questions[i].Answers[j].Text)
-                                            <input type="hidden" asp-for="@Model.Questions[i].Answers[j].Id" />
+                                            <input asp-for="@Model.Quiz.Questions[i].Answers[j].IsChecked">@Html.Raw(Model.Quiz.Questions[i].Answers[j].Text)
+                                            <input type="hidden" asp-for="@Model.Quiz.Questions[i].Answers[j].Id" />
                                         </label>
                                     }
                                 </div>
@@ -121,49 +111,51 @@
             }
             <div class="container-fluid">
                 <ul class="pagination">
-                    @for (int i = 1; i <= Model.Questions.Count; i++)
+                    @for (int i = 1; i <= Model.Quiz.Questions.Count; i++)
                     {
-                        <li class="page-item">
-                            <a class="page-link active" onclick="show(@i)" href="javascript:;">@i</a>
+                        <li class="page-item pr-1 pb-1">
+                            <a class="page-link" onclick="show(@i)" href="javascript:;">@i</a>
                         </li>
                     }
                 </ul>
             </div>
         </form>
     </div>
+    <input hidden id="TotalQuestions" value="@Model.Quiz.Questions.Count" />
     <div class="col-1">
         <div class="form-group">
-            <div class="arrow-right" onclick="next()"></div>
+            <div class="arrow-right" onclick="move(+1)"></div>
         </div>
     </div>
 </div>
 
-@section Scripts{
+@section Scripts
+{
     <script>
         var number = Number(1);
 
-        function next() {
-            document.getElementById("question-" + number).style.display = "none";
-            document.getElementById("question-" + (number + 1)).style.display = "inline";
-            number++;
-        }
+        var maxPages = document.getElementById("TotalQuestions").value;
 
-        function back() {
+        function move(n) {
+            if ((number + n) <= 0 || (number + n) > maxPages) {
+                return;
+            }
             document.getElementById("question-" + number).style.display = "none";
-            document.getElementById("question-" + (number - 1)).style.display = "inline";
-            number--;
+            document.getElementById("question-" + (number + n)).style.display = "inline";
+            number += n;
         }
 
         function show(id) {
             document.getElementById("question-" + number).style.display = "none";
             document.getElementById("question-" + id).style.display = "inline";
             number = id;
+
         }
 
         function getTimeRemaining(endtime) {
             var t = Date.parse(endtime) - Date.parse(new Date());
-            var seconds = Math.floor((t / 1000) % 60);
-            var minutes = Math.floor((t / 1000 / 60) % 60);
+            var seconds = Math.floor(t / 1000) % 60;
+            var minutes = Math.floor(t / 1000 / 60) % 60;
             return {
                 'total': t,
                 'minutes': minutes,
@@ -193,8 +185,5 @@
 
         var deadline = new Date(Date.parse(new Date()) + 15 * 24 * 60 * 60 * 1000);
         initializeClock('clockdiv', deadline);
-
-
-        $("input[name='file_1']").change(function () { this.form.submit(); });
     </script>
 }

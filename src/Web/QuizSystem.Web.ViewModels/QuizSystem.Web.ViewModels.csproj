@@ -28,6 +28,7 @@
     <Folder Include="Administration\Questions\ViewModels\" />
     <Folder Include="Administration\Quizzes\InputModels\" />
     <Folder Include="Questions\ViewModel\" />
+    <Folder Include="Quizzes\InputModels\" />
   </ItemGroup>
 
 </Project>

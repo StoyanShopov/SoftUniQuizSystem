@@ -1,4 +1,4 @@
-﻿namespace QuizSystem.Web.ViewModels.Administration.Quizzes.ViewModels
+﻿namespace QuizSystem.Web.ViewModels.Quizzes.ViewModels
 {
     using System.Collections.Generic;
 

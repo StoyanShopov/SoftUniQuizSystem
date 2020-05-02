@@ -6,28 +6,32 @@
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Http;
+    using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Metadata.Conventions;
     using OfficeOpenXml;
     using QuizSystem.Data.Common.Repositories;
     using QuizSystem.Data.Models;
     using QuizSystem.Services.Mapping;
     using QuizSystem.Web.ViewModels.Administration.Quizzes.InputModels;
-    using Web.ViewModels.Quizzes.InputModels;
+    using QuizSystem.Web.ViewModels.Quizzes.ViewModels;
 
     public class QuizzesService : IQuizzesService
     {
         private readonly IDeletableEntityRepository<Quiz> quizRepository;
         private readonly IDeletableEntityRepository<Question> questionRepository;
         private readonly IDeletableEntityRepository<Answer> answerRepository;
+        private readonly IDeletableEntityRepository<UserContest> userContests;
 
         public QuizzesService(
             IDeletableEntityRepository<Quiz> quizRepository,
             IDeletableEntityRepository<Question> questionRepository,
-            IDeletableEntityRepository<Answer> answerRepository)
+            IDeletableEntityRepository<Answer> answerRepository,
+            IDeletableEntityRepository<UserContest> userContests)
         {
             this.quizRepository = quizRepository;
             this.questionRepository = questionRepository;
             this.answerRepository = answerRepository;
+            this.userContests = userContests;
         }
 
         public async Task<string> CreateAsync(CreateQuizInputModel inputModel)
@@ -109,37 +113,45 @@
             return quizId;
         }
 
-        public Task<int> SubmitAsync(QuizSubmitInputModel model)
+        public async Task<ResultQuizViewModel> SubmitAsync(ContestViewModel model, string userId)
         {
-            return null;
-
             var correctAnswersCollection = this.quizRepository
                 .All()
-                .Where(x => x.Id == model.QuizId)
+                .Include(x => x.Questions)
+                .ThenInclude(x => x.Answers)
+                .Where(x => x.Id == model.Quiz.Id)
                 .SelectMany(x => x.Questions)
                 .SelectMany(x => x.Answers)
                 .Where(a => a.IsCorrect)
                 .Select(t => t.Id)
                 .ToList();
 
+            var selectedAnswers = model.Quiz.Questions
+                .SelectMany(x => x.Answers)
+                .Where(x => x.IsChecked)
+                .Select(x => x.Id)
+                .ToList();
 
-            int counter = 0;
+            var contest = this.userContests
+                .All()
+                .FirstOrDefault(x => x.ContestId == model.Id && x.ApplicationUserId == userId);
 
-            foreach (var question in model.Questions)
+            int totalPoints = correctAnswersCollection.Count;
+            int resultPoints = correctAnswersCollection.Intersect(selectedAnswers).Count();
+            int wrongAnswers = totalPoints - resultPoints;
+
+            contest.Points = resultPoints;
+
+            await this.userContests.SaveChangesAsync();
+
+            var result = new ResultQuizViewModel
             {
-                var checkedAnswers = question.Answers.Where(x => x.Checked).ToList();
+                TotalPoints = totalPoints,
+                CorrectAnswers = resultPoints,
+                WrongAnswers = wrongAnswers,
+            };
 
-                foreach (var checkedAnswer in checkedAnswers)
-                {
-                    if (!correctAnswersCollection.Contains(checkedAnswer.AnswerId))
-                    {
-                        break;
-                    }
-                }
-            }
-
-            
-
+            return result;
         }
     }
 }

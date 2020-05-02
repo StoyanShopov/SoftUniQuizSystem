@@ -26,7 +26,16 @@
 
         public async Task AssignUserToContestAsync(string userId, string contestId)
         {
-            var userContest = new UserContest()
+            var userContest = this.userContests
+                .All()
+                .FirstOrDefault(x => x.ApplicationUserId == userId && x.ContestId == contestId);
+
+            if (userContest != null)
+            {
+                return;
+            }
+
+            userContest = new UserContest
             {
                 ApplicationUserId = userId,
                 ContestId = contestId,

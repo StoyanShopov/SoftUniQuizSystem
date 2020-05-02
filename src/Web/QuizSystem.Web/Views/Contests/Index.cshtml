@@ -1,18 +1,17 @@
-﻿@model StarContestInputModel
+﻿@model QuizSystem.Web.ViewModels.Contests.InputModel.StarContestInputModel
 
 @{
     this.ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <div class="row mt-3">
-        <form asp-controller="Contests" asp-action="Start" method="post">
-                <label id="Password" class="form-group">Password</label>
-                <input type="Password" id="Password" name="Password" class="form-group" />
-                <span class="text-danger"></span>
-                <button type="submit" class="btn btn-primary">Go</button>
-            </form>
-    </div>
+
+<div class="container mt-5 mb-5 justify-content-center">
+    <p class="h4 mb-2 text-center mt-lg-5">FQA</p>
+    <p class="text-center">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+    <p class="text-center">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+    <form asp-controller="Contests" asp-action="Start" method="post" class="text-center border border-light p-5">
+        <p class="h4 mb-4">Enter in contest</p>
+        <input asp-for="@Model.Password" class="form-control mb-4" placeholder="Contest password">
+        <button class="btn btn-block btn-primary" type="submit">Start</button>
+    </form>
 </div>
-
-

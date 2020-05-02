@@ -3,12 +3,10 @@
     using QuizSystem.Data.Models;
     using QuizSystem.Services.Mapping;
 
-    public class QuizQuestionAnswerDetailViewModel : IMapFrom<Answer>
+    public class ContestViewModel : IMapFrom<Contest>
     {
         public string Id { get; set; }
 
-        public string Text { get; set; }
-
-        public bool IsChecked { get; set; }
+        public DetailQuizViewModel Quiz { get; set; }
     }
 }

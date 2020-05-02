@@ -37,7 +37,7 @@
 
             var questionId = await this.questionsService.CreateAsync(inputModel);
 
-            return this.RedirectToAction("Create", "Answers", questionId);
+            return this.RedirectToAction("Create", "Answers", new { questionId });
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿namespace QuizSystem.Web
 {
+    using System;
     using System.Reflection;
 
     using Microsoft.AspNetCore.Builder;
@@ -52,6 +53,7 @@
                     {
                         options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
                     });
+
             services.AddRazorPages();
 
             services.AddSingleton(this.configuration);

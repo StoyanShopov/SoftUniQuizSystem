@@ -1,4 +1,4 @@
-﻿namespace QuizSystem.Web.ViewModels.Administration.Quizzes.ViewModels
+﻿namespace QuizSystem.Web.ViewModels.Contests.InputModel
 {
     public class StarContestInputModel
     {

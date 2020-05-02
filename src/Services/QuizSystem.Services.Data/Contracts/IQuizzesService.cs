@@ -5,7 +5,7 @@
 
     using Microsoft.AspNetCore.Http;
     using QuizSystem.Web.ViewModels.Administration.Quizzes.InputModels;
-    using QuizSystem.Web.ViewModels.Quizzes.InputModels;
+    using QuizSystem.Web.ViewModels.Quizzes.ViewModels;
 
     public interface IQuizzesService
     {
@@ -17,6 +17,6 @@
 
         Task<string> ImportQuestionsAsync(string quizId, IFormFile formFile);
 
-        Task<int> SubmitAsync(QuizSubmitInputModel model);
+        Task<ResultQuizViewModel> SubmitAsync(ContestViewModel model, string userId);
     }
 }
