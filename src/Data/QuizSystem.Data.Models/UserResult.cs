@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+
     using QuizSystem.Data.Common.Models;
 
     public class UserResult : BaseDeletableModel<string>
@@ -21,6 +22,6 @@
 
         public DateTime FinishedOn { get; set; }
 
-        public ICollection<UserAnswer> UserAnswer { get; set; }
+        public ICollection<UserQuestion> UserQuestions { get; set; }
     }
 }

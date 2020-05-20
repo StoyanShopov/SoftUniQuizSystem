@@ -1,6 +1,8 @@
 ﻿namespace QuizSystem.Data.Models
 {
     using System;
+    using System.Collections.Generic;
+    using System.Text;
 
     using QuizSystem.Data.Common.Models;
 
@@ -10,10 +12,6 @@
         {
             this.Id = Guid.NewGuid().ToString();
         }
-
-        public string QuestionId { get; set; }
-
-        public Question Question { get; set; }
 
         public string Text { get; set; }
 

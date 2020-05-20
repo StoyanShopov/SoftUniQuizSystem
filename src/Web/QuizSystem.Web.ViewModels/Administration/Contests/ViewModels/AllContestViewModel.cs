@@ -1,11 +1,7 @@
 ﻿namespace QuizSystem.Web.ViewModels.Administration.Contests.ViewModels
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Runtime.InteropServices.ComTypes;
 
-    using AutoMapper;
     using QuizSystem.Data.Models;
     using QuizSystem.Services.Mapping;
 

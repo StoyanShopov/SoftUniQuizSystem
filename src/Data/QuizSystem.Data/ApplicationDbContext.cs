@@ -39,6 +39,8 @@
 
         public DbSet<UserAnswer> UserAnswers { get; set; }
 
+        public DbSet<UserQuestion> UserQuestions { get; set; }
+
         public override int SaveChanges()
             => this.SaveChanges(true);
 

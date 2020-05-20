@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace QuizSystem.Web.ViewModels.UserResults.ViewModels
+﻿namespace QuizSystem.Web.ViewModels.UserResults.ViewModels
 {
+    using System.Collections.Generic;
+
     public class UserQuestionReslutViewModel
     {
         public string Id { get; set; }

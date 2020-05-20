@@ -23,7 +23,6 @@
             {
                 Text = inputModel.Text,
                 IsCorrect = inputModel.IsCorrect,
-                IsFreeAnswer = inputModel.IsFreeAnswer,
                 QuestionId = inputModel.QuestionId,
             };
 

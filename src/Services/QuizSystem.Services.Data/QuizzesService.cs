@@ -7,8 +7,7 @@
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Http;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+
     using OfficeOpenXml;
     using QuizSystem.Data.Common.Repositories;
     using QuizSystem.Data.Models;
@@ -21,19 +20,16 @@
         private readonly IDeletableEntityRepository<Quiz> quizRepository;
         private readonly IDeletableEntityRepository<Question> questionRepository;
         private readonly IDeletableEntityRepository<Answer> answerRepository;
-        private readonly IDeletableEntityRepository<UserContest> userContests;
         private readonly IDeletableEntityRepository<UserResult> userResultRepository;
 
         public QuizzesService(
             IDeletableEntityRepository<Quiz> quizRepository,
             IDeletableEntityRepository<Question> questionRepository,
-            IDeletableEntityRepository<Answer> answerRepository,
-            IDeletableEntityRepository<UserContest> userContests)
+            IDeletableEntityRepository<Answer> answerRepository)
         {
             this.quizRepository = quizRepository;
             this.questionRepository = questionRepository;
             this.answerRepository = answerRepository;
-            this.userContests = userContests;
         }
 
         public async Task<string> CreateAsync(CreateQuizInputModel inputModel)
@@ -133,16 +129,24 @@
 
             foreach (var question in model.Quiz.Questions)
             {
+                var userQuestion = new UserQuestion
+                {
+                    QuestionId = question.Id,
+                };
+
                 foreach (var answer in question.Answers)
                 {
-                    userResult.UserAnswer.Add(new UserAnswer
+                    userQuestion.UserAnswers.Add(new UserAnswer
                     {
-                        QuestionId = question.Id,
                         SelectedId = answer.Id,
+                        Text = answer.Text,
                     });
                 }
+
+                userResult.UserQuestions.Add(userQuestion);
             }
 
+            await this.userResultRepository.AddAsync(userResult);
             await this.userResultRepository.SaveChangesAsync();
         }
 

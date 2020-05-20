@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace QuizSystem.Web.ViewModels.UserResults.ViewModels
+﻿namespace QuizSystem.Web.ViewModels.UserResults.ViewModels
 {
+    using System;
+    using System.Collections.Generic;
+
     public class UserContestResultViewModel
     {
         public string ContestName { get; set; }

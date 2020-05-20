@@ -1,6 +1,5 @@
 ﻿namespace QuizSystem.Web.ViewModels.Quizzes.ViewModels
 {
-    using AutoMapper;
     using QuizSystem.Data.Models;
     using QuizSystem.Services.Mapping;
 

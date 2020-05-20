@@ -1,9 +1,7 @@
 ﻿namespace QuizSystem.Services.Data
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
 
     using QuizSystem.Data.Common.Repositories;
     using QuizSystem.Data.Models;

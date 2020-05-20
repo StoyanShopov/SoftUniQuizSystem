@@ -12,12 +12,10 @@
     public class ResultsController : BaseController
     {
         private readonly IUserResultsService userResultsService;
-        private readonly IQuizzesService quizzesService;
 
-        public ResultsController(IUserResultsService userResultsService, IQuizzesService quizzesService)
+        public ResultsController(IUserResultsService userResultsService)
         {
             this.userResultsService = userResultsService;
-            this.quizzesService = quizzesService;
         }
 
         public IActionResult Index()
