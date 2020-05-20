@@ -1,5 +1,6 @@
 ﻿namespace QuizSystem.Services.Data.Contracts
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -21,6 +22,7 @@
         private readonly IDeletableEntityRepository<Question> questionRepository;
         private readonly IDeletableEntityRepository<Answer> answerRepository;
         private readonly IDeletableEntityRepository<UserContest> userContests;
+        private readonly IDeletableEntityRepository<UserResult> userResultRepository;
 
         public QuizzesService(
             IDeletableEntityRepository<Quiz> quizRepository,
@@ -113,45 +115,57 @@
             return quizId;
         }
 
-        public async Task<ResultQuizViewModel> SubmitAsync(ContestViewModel model, string userId)
+        public async Task SubmitAsync(ContestViewModel model, string userId)
         {
-            var correctAnswersCollection = this.quizRepository
-                .All()
-                .Include(x => x.Questions)
-                .ThenInclude(x => x.Answers)
-                .Where(x => x.Id == model.Quiz.Id)
-                .SelectMany(x => x.Questions)
-                .SelectMany(x => x.Answers)
-                .Where(a => a.IsCorrect)
-                .Select(t => t.Id)
-                .ToList();
-
-            var selectedAnswers = model.Quiz.Questions
+            var selectedAnswers = model.Quiz
+                .Questions
                 .SelectMany(x => x.Answers)
                 .Where(x => x.IsChecked)
                 .Select(x => x.Id)
-                .ToList();
+                .ToArray();
 
-            var contest = this.userContests
-                .All()
-                .FirstOrDefault(x => x.ContestId == model.Id && x.ApplicationUserId == userId);
-
-            int totalPoints = correctAnswersCollection.Count;
-            int resultPoints = correctAnswersCollection.Intersect(selectedAnswers).Count();
-            int wrongAnswers = totalPoints - resultPoints;
-
-            contest.Points = resultPoints;
-
-            await this.userContests.SaveChangesAsync();
-
-            var result = new ResultQuizViewModel
+            var userResult = new UserResult
             {
-                TotalPoints = totalPoints,
-                CorrectAnswers = resultPoints,
-                WrongAnswers = wrongAnswers,
+                ApplicationUserId = userId,
+                ContestId = model.Id,
+                FinishedOn = DateTime.UtcNow,
             };
 
-            return result;
+            foreach (var question in model.Quiz.Questions)
+            {
+                foreach (var answer in question.Answers)
+                {
+                    userResult.UserAnswer.Add(new UserAnswer
+                    {
+                        QuestionId = question.Id,
+                        SelectedId = answer.Id,
+                    });
+                }
+            }
+
+            await this.userResultRepository.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(string quizId)
+        {
+            var quiz = this.quizRepository
+                .All()
+                .FirstOrDefault(x => x.Id == quizId);
+
+            this.quizRepository.Delete(quiz);
+
+            await this.quizRepository.SaveChangesAsync();
+        }
+
+        public async Task EditAsync(EditQuizInputModel inputModel)
+        {
+            var quiz = this.quizRepository
+                .All()
+                .FirstOrDefault(x => x.Id == inputModel.Id);
+
+            quiz.Name = inputModel.Name;
+
+            await this.quizRepository.SaveChangesAsync();
         }
     }
 }

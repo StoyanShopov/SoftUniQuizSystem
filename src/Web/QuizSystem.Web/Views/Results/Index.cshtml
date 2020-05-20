@@ -1,0 +1,30 @@
+﻿@model IEnumerable<QuizSystem.Web.ViewModels.UserResults.ViewModels.UserCompletedContestViewModel>
+
+@{
+    this.ViewData["Title"] = "Home Page";
+}
+
+
+<table class="table table-striped table-bordered shadow mt-3">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Started On</th>
+            <th scope="col">Finished On</th>
+            <th scope="col">Details</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in this.Model)
+        {
+            <tr>
+                <th scope="row">@item.ContestName</th>
+                <td>@item.CreatedOn</td>
+                <td>@item.FinishedOn</td>
+                <td>
+                    <a asp-area="" asp-controller="Results" asp-action="Details" asp-route-contestId="@item.Id">Details</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

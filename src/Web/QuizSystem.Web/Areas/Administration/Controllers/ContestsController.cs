@@ -1,5 +1,8 @@
 ﻿namespace QuizSystem.Web.Areas.Administration.Controllers
 {
+    using System;
+    using System.Linq;
+    using System.Reflection.Metadata;
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Mvc;
@@ -19,11 +22,20 @@
             this.contestsService = contestsService;
         }
 
-        public IActionResult All()
+        public IActionResult All(int page = 1, int perPage = 9)
         {
-            var allContests = this.contestsService.GetAll<AllContestViewModel>();
+            var allContests = this.contestsService.GetAll<AllContestViewModel>(page, perPage).ToList();
+            var totalContests = this.contestsService.TotalContests;
+            var pagesCount = (int)Math.Ceiling(totalContests / (decimal)perPage);
 
-            return this.View(allContests);
+            var model = new ByPageContestViewModel
+            {
+                Contests = allContests,
+                CurrentPage = page,
+                PagesCount = pagesCount,
+            };
+
+            return this.View(model);
         }
 
         public IActionResult Create()
@@ -50,9 +62,34 @@
 
         public IActionResult Details(string contestId)
         {
+            this.ViewData["AllQuizzes"] = SelectListGenerator.GetAllQuizzes(this.quizzesService);
+
             var contest = this.contestsService.GetById<DetailContestViewModel>(contestId);
 
             return this.View(contest);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(EditContestInputModel model)
+        {
+            if (!this.ModelState.IsValid)
+            {
+                this.ViewData["AllQuizzes"] = SelectListGenerator.GetAllQuizzes(this.quizzesService);
+
+                return this.RedirectToAction("Details", new { contestId = model.Id });
+            }
+
+            await this.contestsService.EditAsync(model);
+
+            return this.RedirectToAction("Details", new { contestId = model.Id });
+        }
+
+        public async Task<IActionResult> Delete(string contestId)
+        {
+            await this.contestsService.DeleteAsync(contestId);
+
+            return this.RedirectToAction("All");
         }
     }
 }

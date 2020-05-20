@@ -177,6 +177,7 @@ namespace QuizSystem.Web.Areas.Identity.Pages.Account
             response = await client.PostAsync(targetUrl, content);
             htmlResult = await response.Content.ReadAsStringAsync();
 
+            // TODO: Fix it!!!
             if (htmlResult.Contains("action=\"/Account/LogOff\"")
                 && htmlResult.Contains($"<a class=\"text-primary\" href=\"/Users/Profile\" title=\"Settings\">Hello, {inputUsername}!</a>"))
             {

@@ -1,12 +1,12 @@
 ﻿namespace QuizSystem.Data.Models
 {
     using System;
-
+    using System.Collections.Generic;
     using QuizSystem.Data.Common.Models;
 
-    public class UserContest : BaseDeletableModel<string>
+    public class UserResult : BaseDeletableModel<string>
     {
-        public UserContest()
+        public UserResult()
         {
             this.Id = Guid.NewGuid().ToString();
         }
@@ -18,5 +18,9 @@
         public string ContestId { get; set; }
 
         public Contest Contest { get; set; }
+
+        public DateTime FinishedOn { get; set; }
+
+        public ICollection<UserAnswer> UserAnswer { get; set; }
     }
 }

@@ -34,13 +34,10 @@
         public async Task<IActionResult> Submit(ContestViewModel model)
         {
             var userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var resultQuiz = await this.quizzesService.SubmitAsync(model, userId);
 
-            TempData["CorrectAnswers"] = resultQuiz.CorrectAnswers;
-            TempData["WrongAnswers"] = resultQuiz.WrongAnswers;
-            TempData["TotalPoints"] = resultQuiz.TotalPoints;
+            await this.quizzesService.SubmitAsync(model, userId);
 
-            return this.RedirectToAction("Result");
+            return this.RedirectToAction("Index", "Home");
         }
 
         public IActionResult Result()

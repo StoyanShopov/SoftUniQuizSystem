@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Runtime.InteropServices;
     using System.Threading.Tasks;
 
     using QuizSystem.Data.Common.Repositories;
@@ -23,6 +24,9 @@
             this.contestRepository = contestRepository;
             this.userContests = userContests;
         }
+
+        public int TotalContests
+            => this.contestRepository.AllAsNoTracking().Count();
 
         public async Task AssignUserToContestAsync(string userId, string contestId)
         {
@@ -62,12 +66,37 @@
             return contest.Id;
         }
 
-        public IEnumerable<T> GetAll<T>()
-            => this.contestRepository
+        public async Task EditAsync(EditContestInputModel model)
+        {
+            var contest = this.contestRepository
+                .All()
+                .FirstOrDefault(x => x.Id == model.Id);
+
+            contest.QuizId = model.QuizId;
+            contest.StartDateTime = model.StartDateTime;
+            contest.EndDateTime = model.EndDateTime;
+            contest.Name = model.Name;
+            contest.Password = model.Password;
+
+            await this.contestRepository.SaveChangesAsync();
+        }
+
+        public IEnumerable<T> GetAll<T>(int skip, int take)
+        {
+            var contests = this.contestRepository
                 .All()
                 .OrderByDescending(x => x.CreatedOn)
                 .To<T>()
                 .ToList();
+
+            if (contests.Count < take)
+            {
+                return contests;
+            }
+
+            return contests.Skip(skip * (take - 1))
+                .Take(skip);
+        }
 
         public T GetById<T>(string contestId)
             => this.contestRepository
@@ -84,11 +113,22 @@
                 .FirstOrDefault();
 
         public string GetQuizIdByContestId(string contestId)
-        => this.contestRepository
+            => this.contestRepository
+                    .All()
+                    .Where(x => x.Id == contestId)
+                    .Select(x => x.QuizId)
+                    .FirstOrDefault();
+
+        public async Task DeleteAsync(string contestId)
+        {
+            var contest = this.contestRepository
                 .All()
-                .Where(x => x.Id == contestId)
-                .Select(x => x.QuizId)
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.Id == contestId);
+
+            this.contestRepository.Delete(contest);
+
+            await this.contestRepository.SaveChangesAsync();
+        }
 
         public bool IsAvailable(string password)
         {

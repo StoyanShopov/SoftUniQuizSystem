@@ -9,7 +9,11 @@
     {
         Task<string> CreateAsync(CreateContestInputModel inputModel);
 
-        IEnumerable<T> GetAll<T>();
+        Task DeleteAsync(string contestId);
+
+        Task EditAsync(EditContestInputModel model);
+
+        IEnumerable<T> GetAll<T>(int skip, int take);
 
         T GetById<T>(string contestId);
 
@@ -20,5 +24,7 @@
         Task AssignUserToContestAsync(string userId, string contestId);
 
         string GetQuizIdByContestId(string contestId);
+
+        int TotalContests { get; }
     }
 }

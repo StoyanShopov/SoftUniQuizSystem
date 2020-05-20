@@ -35,6 +35,10 @@
 
         public DbSet<Setting> Settings { get; set; }
 
+        public DbSet<UserResult> UserResults { get; set; }
+
+        public DbSet<UserAnswer> UserAnswers { get; set; }
+
         public override int SaveChanges()
             => this.SaveChanges(true);
 

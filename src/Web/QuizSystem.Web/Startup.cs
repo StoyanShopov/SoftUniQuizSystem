@@ -72,6 +72,7 @@
             services.AddTransient<IAnswersService, AnswersService>();
             services.AddTransient<IQuizzesService, QuizzesService>();
             services.AddTransient<IContestsService, ContestsService>();
+            services.AddTransient<IUserResultsService, IUserResultsService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

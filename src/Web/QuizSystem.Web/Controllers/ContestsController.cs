@@ -1,13 +1,13 @@
-﻿using System.Security.Claims;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using QuizSystem.Services.Data.Contracts;
-using QuizSystem.Web.ViewModels.Contests.InputModel;
-
-namespace QuizSystem.Web.Controllers
+﻿namespace QuizSystem.Web.Controllers
 {
+    using System.Security.Claims;
+    using System.Threading.Tasks;
+
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+    using QuizSystem.Services.Data.Contracts;
+    using QuizSystem.Web.ViewModels.Contests.InputModel;
+
     [Authorize]
     public class ContestsController : BaseController
     {
@@ -18,7 +18,7 @@ namespace QuizSystem.Web.Controllers
             this.contestsService = contestsService;
         }
 
-        public IActionResult Index()
+        public IActionResult Start()
         {
             return this.View();
         }
@@ -26,11 +26,16 @@ namespace QuizSystem.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Start(StarContestInputModel model)
         {
+            if (!this.ModelState.IsValid)
+            {
+                return this.View();
+            }
+
             var isValidContest = this.contestsService.IsAvailable(model.Password);
 
             if (!isValidContest)
             {
-                return this.RedirectToAction("Index", "Home");
+                return this.View();
             }
 
             var userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);

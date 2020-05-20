@@ -1,10 +1,52 @@
 ﻿@model DetailContestViewModel
 @{
-    this.ViewData["Title"] = "Admin dashboard";
+    this.ViewData["Title"] = "Edit Contest";
+    var quizzes = this.ViewData["AllQuizzes"] as IEnumerable<SelectListItem>;
 }
 
-@Model.Name
-@Model.StartDateTime
-@Model.EndDateTime
-@Model.Password
-@Model.QuizId
+<div class="justify-content-center mt-4">
+    <form asp-area="Administration" asp-controller="Contests" asp-action="Edit" method="post">
+        <div class="component">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h4 class="card-title">Edit Contest</h4>
+                </div>
+                <div class="card-body pb-5">
+                    <div class="form-group">
+                        <input hidden asp-for="@Model.Id" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="@Model.Name">Name</label>
+                        <input asp-for="@Model.Name" class="form-control" />
+                        <span asp-validation-for="@Model.Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="@Model.StartDateTime"></label>
+                        <input asp-for="@Model.StartDateTime" class="form-control" />
+                        <span asp-validation-for="@Model.StartDateTime" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="@Model.EndDateTime"></label>
+                        <input asp-for="@Model.EndDateTime" class="form-control"/>
+                        <span asp-validation-for="@Model.EndDateTime" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="@Model.Password"></label>
+                        <input asp-for="@Model.Password" class="form-control" />
+                        <span asp-validation-for="@Model.Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="@Model.QuizId"></label>
+                        <select asp-for="@Model.QuizId" asp-items="@quizzes" class="form-control"></select>
+                        <span asp-validation-for="@Model.QuizId" class="text-danger"></span>
+                    </div>
+                    <div class="row mx-1 text-white">
+                        <button type="submit" class="btn btn-primary btn-block col-md-5 mt-5">Edit</button>
+                        <div class="col-1 mr-4"></div>
+                        <a class="btn btn-primary btn-block col-md-5 mt-5" asp-area="Administration" asp-controller="Dashboard" asp-action="Index">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

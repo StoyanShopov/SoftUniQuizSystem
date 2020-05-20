@@ -17,6 +17,10 @@
 
         Task<string> ImportQuestionsAsync(string quizId, IFormFile formFile);
 
-        Task<ResultQuizViewModel> SubmitAsync(ContestViewModel model, string userId);
+        Task SubmitAsync(ContestViewModel model, string userId);
+
+        Task DeleteAsync(string quizId);
+
+        Task EditAsync(EditQuizInputModel inputModel);
     }
 }

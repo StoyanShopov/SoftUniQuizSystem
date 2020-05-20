@@ -1,7 +1,58 @@
-﻿@model QuizSystem.Web.ViewModels.Administration.Dashboard.IndexViewModel
+﻿@model DetailQuizViewModel
+
 @{
-    this.ViewData["Title"] = "Admin dashboard";
+    this.ViewData["Title"] = "Admin Quiz Detail Page";
+    var counter = 1;
 }
 
-<h1>@this.ViewData["Title"]</h1>
-Settings: @this.Model.SettingsCount
+<form asp-controller="Quizzes" asp-action="ImportQuestions" asp-route-id="@Model.Id" enctype="multipart/form-data">
+    <input name="file_1"
+           type="file"
+           onchange="this.form.submit();"
+           value="Import Questions"
+           class="nav-link  btn btn-primary" />
+</form>
+
+<div class="row align-items-center">
+    <div class="col-10">
+        <form asp-area="" asp-action="Edit" asp-controller="Quizzes" method="post">
+            <input hidden asp-for="@Model.Id" />
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary float-right" onclick="return confirm('Are you sure you want to submit?');">Edit</button>
+            </div>
+            @for (int i = 0; i < Model.Questions.Count; i++)
+            {
+                <input hidden asp-for="@Model.Questions[i].Id" />
+
+                <div id="question-@(counter++)">
+                    <div class="container-fluid bg-gray mt-1 rounded shadow">
+                        <div class="form-group">
+                            <div class="modal-body">
+                                <div class="quiz" id="quiz" data-toggle="buttons">
+                                    <h1 class="text-center mt-2">Question</h1>
+                                    <p class="text-center">
+                                        @Model.Questions[i].Text
+                                    </p>
+                                    @for (int j = 0; j < Model.Questions[i].Answers.Count; j++)
+                                    {
+                                        <label class="btn btn-lg btn-primary btn-block text-left">
+                                            <input asp-for="@Model.Questions[i].Answers[j].Checked">@Html.Raw(Model.Questions[i].Answers[j].Text)
+                                            <input type="hidden" asp-for="@Model.Questions[i].Answers[j].Id" />
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </form>
+    </div>
+</div>
+
+@section Scripts{
+    <script>
+
+        $("input[name='file_1']").change(function () { this.form.submit(); });
+    </script>
+}

@@ -49,6 +49,33 @@
             return this.View(quiz);
         }
 
+        public IActionResult Edit(string quizId)
+        {
+            var quiz = this.quizzesService.GetById<DetailQuizViewModel>(quizId);
+
+            return this.View(quiz);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(EditQuizInputModel inputModel)
+        {
+            if (!this.ModelState.IsValid)
+            {
+                return this.RedirectToAction("Details", new { quizId = inputModel.Id });
+            }
+
+            await this.quizzesService.EditAsync(inputModel);
+
+            return this.RedirectToAction("Details", new { quizId = inputModel.Id });
+        }
+
+        public async Task<IActionResult> Delete(string quizId)
+        {
+            await this.quizzesService.DeleteAsync(quizId);
+
+            return this.RedirectToAction("All");
+        }
+
         [HttpPost]
         public async Task<IActionResult> ImportQuestions([FromForm(Name = "file_1")] IFormFile file, string id)
         {
